@@ -1,11 +1,3 @@
-from peewee import *
-
-db = SqliteDatabase('database.db')
-
-class BaseModel(Model):
-    class Meta:
-        database = db
-
 # relations
 # Analysis <-> Run Condition: one-to-many
 #   * an analysis is always for a single run condition (yes? combined analyses? 7+8 TeV?)
@@ -32,22 +24,33 @@ class BaseModel(Model):
 #   * a user can be subscribed to multiple requests
 #
 
+from flask.ext.sqlalchemy import SQLAlchemy
 
-class User(BaseModel):
-  pass
-        
-class Request(BaseModel):
-  analysis = ForeignKeyField(Analysis, related_name='requests')
-  
-class ParameterPoint(BaseModel):
-  request = ForeignKeyField(Request, related_name='parampoints')    
-  
-class Analysis(BaseModel):
-  user = ForeignKeyField(User, related_name='owned_analyses')
-  run_condition = ForeignKeyField(RunCondition, related_name='analyses')
+db = SQLAlchemy()
 
-class RunCondition(BaseModel):
-  pass
+# class RunCondition(db.Model):
+#   id = db.Column(db.Integer, primary_key=True)
+#
+# class User(db.Model):
+#   id = db.Column(db.Integer, primary_key=True)
+#
+# class Analysis(db.Model):
+#   id = db.Column(db.Integer, primary_key=True)
+#
+# class Request(db.Model):
+#   id = db.Column(db.Integer, primary_key=True)
+#
+# class ParameterPoint(db.Model):
+#   id = db.Column(db.Integer, primary_key=True)
+#
+# class Response(db.Model):
+#   id = db.Column(db.Integer, primary_key=True)
+
+class Processing(db.Model):
+  """ this is an actual request to process the recast request """
+  id = db.Column(db.Integer, primary_key = True)
+  jobguid = db.Column(db.String(36), unique = True)
+  chainresult = db.Column(db.String(36), unique = True)
+
+
   
-class Response(BaseModel):
-  request = ForeignKeyField(Response, related_name='response')
