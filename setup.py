@@ -5,5 +5,8 @@ setup(
   version = '0.0.1',
   description = 'database code for RECAST',
   author = 'Lukas Heinrich',
-  packages = find_packages()
+  packages = find_packages(),
+  install_requires = [
+    'Flask-SQLAlchemy'
+  ]
 )

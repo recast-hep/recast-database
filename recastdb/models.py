@@ -24,10 +24,6 @@
 #   * a user can be subscribed to multiple requests
 #
 
-from flask.ext.sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
-
 # class RunCondition(db.Model):
 #   id = db.Column(db.Integer, primary_key=True)
 #
@@ -45,6 +41,8 @@ db = SQLAlchemy()
 #
 # class Response(db.Model):
 #   id = db.Column(db.Integer, primary_key=True)
+
+from database import db
 
 class Processing(db.Model):
   """ this is an actual request to process the recast request """
