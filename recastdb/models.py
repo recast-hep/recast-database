@@ -1,9 +1,11 @@
+from database import db
+
 # relations
-# Analysis <-> Run Condition: one-to-many
+# Analysis <-> Run Condition: many-to-one
 #   * an analysis is always for a single run condition (yes? combined analyses? 7+8 TeV?)
 #   * there are many analyses for a single run condition (say all Run 1 analyses)
 #
-# Analysis <-> Owner (User): one-to-many
+# Analysis <-> Owner (User): many-to-one
 #   * an analysis has always one owner
 #   * one user can own multiple analyses
 #
@@ -11,7 +13,7 @@
 #   * a request is always for a single analysis
 #   * an analysis can have multiple requests
 #
-# Request <-> Result: one-to-one
+# Request <-> Result: one-to-(zero or one) .. implemented as one-to-many...
 #   * one request can only have a single result
 #   * one result is always to a single request
 #
@@ -24,31 +26,55 @@
 #   * a user can be subscribed to multiple requests
 #
 
-# class RunCondition(db.Model):
-#   id = db.Column(db.Integer, primary_key=True)
-#
-# class User(db.Model):
-#   id = db.Column(db.Integer, primary_key=True)
-#
-# class Analysis(db.Model):
-#   id = db.Column(db.Integer, primary_key=True)
-#
-# class Request(db.Model):
-#   id = db.Column(db.Integer, primary_key=True)
-#
-# class ParameterPoint(db.Model):
-#   id = db.Column(db.Integer, primary_key=True)
-#
-# class Response(db.Model):
-#   id = db.Column(db.Integer, primary_key=True)
+class RunCondition(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  title = db.Column(db.String)
+  analyses = db.relationship('Analysis',backref='runcondition',lazy='dynamic')
 
-from database import db
+class User(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  username = db.Column(db.String)
+  analyses = db.relationship('Analysis',backref='owner',lazy='dynamic')
+
+class Analysis(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  title = db.Column(db.String)
+  runcondition_id = db.Column(db.Integer,db.ForeignKey('run_condition.id'))
+  owner_id = db.Column(db.Integer,db.ForeignKey('user.id'))
+  requests = db.relationship('Request',backref='analysis',lazy='dynamic')
+
+
+subscriptions = db.Table('subscriptions',
+                         db.Column('subscriber_id',db.Integer,db.ForeignKey('user.id')),
+                         db.Column('reqeust_id',db.Integer,db.ForeignKey('request.id'))
+                         )
+
+
+class Request(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  title = db.Column(db.String)
+  analysis_id = db.Column(db.Integer,db.ForeignKey('analysis.id'))
+  responses = db.relationship('Response', backref='request', lazy = 'dynamic')
+  parameter_points = db.relationship('ParameterPoint',backref = 'request',lazy='dynamic')
+  subscribers = db.relationship('User',secondary=subscriptions)
+  
+  
+class ParameterPoint(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  title = db.Column(db.String)
+  request_id = db.Column(db.Integer,db.ForeignKey('request.id'))
+
+class Response(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  title = db.Column(db.String)
+  request_id = db.Column(db.Integer,db.ForeignKey('request.id'))
 
 class Processing(db.Model):
   """ this is an actual request to process the recast request """
-  id = db.Column(db.Integer, primary_key = True)
-  jobguid = db.Column(db.String(36), unique = True)
-  chainresult = db.Column(db.String(36), unique = True)
+  id            = db.Column(db.Integer, primary_key = True)
+  jobguid       = db.Column(db.String(36), unique = True)
+  celerytaskid  = db.Column(db.String(36), unique = True)
+
 
 
 # many to many relationship between User & Analysis
@@ -96,7 +122,6 @@ class Analysis(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     description_of_original_analysis = db.Column(db.String)
-
 
     def __init__(self, description):
         self.description_of_original_analysis = description
@@ -197,3 +222,4 @@ class BasicResponse(db.Model):
 lower1sigLimitOnCrossSection='%d', upper1sigLimitOnCrossSection='%d', lower2sigLimitOnCrossSection='%d', upper2sigLimitOnCrossSection='%d', lower1sigLimitOnRate='%d', upper1sigLimitOnRate='%d', lower2sigLimitOnRate='%d', upper2sigLimitOnRate='%d', logLikelihoodAtReference='%d', referenceCrossSection='%d')>" % \
 (self.overall_efficiency, self.nominal_luminosity, self.lower_1sig_limit_on_cross_section, self.upper_1sig_limit_on_cross_section, self.lower_2sig_limit_on_cross_section, self.upper_2sig_limit_on_cross_section, self.lower_1sig_limit_on_rate, self.upper_1sig_limit_on_rate, self.lower_2sig_limit_on_rate, self.upper_2sig_limit_on_rate, self.log_likelihood_at_reference, self.reference_cross_section)
         
+
