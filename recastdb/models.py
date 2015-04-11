@@ -54,7 +54,7 @@ class Request(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   title = db.Column(db.String)
   analysis_id = db.Column(db.Integer,db.ForeignKey('analysis.id'))
-  responses = db.relationship('Response', backref='request')
+  responses = db.relationship('Response', backref='request', lazy = 'dynamic')
   parameter_points = db.relationship('ParameterPoint',backref = 'request',lazy='dynamic')
   subscribers = db.relationship('User',secondary=subscriptions)
   
