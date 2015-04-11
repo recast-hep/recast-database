@@ -33,7 +33,7 @@ class RunCondition(db.Model):
 
 class User(db.Model):
   id = db.Column(db.Integer, primary_key=True)
-  title = db.Column(db.String)
+  username = db.Column(db.String)
   analyses = db.relationship('Analysis',backref='owner',lazy='dynamic')
 
 class Analysis(db.Model):
