@@ -196,7 +196,7 @@ class PointResponse(db.Model):
 
     def __repr__(self):
         return "<PointResponse(lumiWeightedEfficiency='%d', totalLuminosity='%d', lower1sigLimitOnCrossSectionWrtReference='%d', upper1sigLimitOnCrossSectionWrtReference='%d', lower2sigLimitOnCrossSectionWrtReference='%d', upper2sigLimitOnCrossSectionWrtReference='%d', logLikelihoodAtReference='%d')>" % \
-(self.lumi_weighted_efficiency, self.total_lumininosity, self.lower_1sig_Limit)on_cross_section_wrt_reference, self.upper_1sig_limit_on_cross_section_wrt_reference, self.lower_2sig_limit_on_cross_section_wrt_reference, self.upper_2sig_limit_on_cross_section_wrt_reference, self.log_likelihoof_at_reference)
+(self.lumi_weighted_efficiency, self.total_lumininosity, self.lower_1sig_Limit)on_cross_section_wrt_reference, self.upper_1sig_limit_on_cross_section_wrt_reference, self.lower_2sig_limit_on_cross_section_wrt_reference, self.upper_2sig_limit_on_cross_section_wrt_reference, self.log_likelihood_at_reference)
     
 
 class BasicResponse(db.Model):
