@@ -87,138 +87,148 @@ subscribers = db.Table('subscribers',
 
 
 class User(db.Model):
-    __tablename__ = 'users'
+  __tablename__ = 'users'
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    email = db.Column(db.String)
+  id = db.Column(db.Integer, primary_key=True)
+  name = db.Column(db.String)
+  email = db.Column(db.String)
 
-    analyses = db.relationship('Analysis',
+  analyses = db.relationship('Analysis',
                                secondary=subscribers,
                                backref=db.backref('users', lazy='dynamic'), lazy='dynamic')
-    def __init__(self, name, email):
-        self.name = name
-        self.email = email
+  def __init__(self, name, email):
+    self.name = name
+    self.email = email
 
-    def __repr__(self):
-        return "<User(name='%s', email='%s')>" % (self.name, self.email)
+  def __repr__(self):
+    return "<User(name='%s', email='%s')>" % (self.name, self.email)
 
 
 class Model(db.Model):
-    __tablename__ = 'models'
+  __tablename__ = 'models'
 
-    id = db.Column(db.Integer, primary_key=True)
-    description_of_model = db.Column(db.String)
+  id = db.Column(db.Integer, primary_key=True)
+  description_of_model = db.Column(db.String)
 
-    def __init__(self, description):
-        self.descrition_of_model = description
+  def __init__(self, description):
+    self.descrition_of_model = description
 
-    def __repr__(self):
-        return "<Model(ID='%d', description='%s')>" % (self.id, self.description_of_model)
+  def __repr__(self):
+    return "<Model(ID='%d', description='%s')>" % (self.id, self.description_of_model)
 
 
 class Analysis(db.Model):
-    __tablename__ = 'analysis'
+  __tablename__ = 'analysis'
 
-    id = db.Column(db.Integer, primary_key=True)
-    description_of_original_analysis = db.Column(db.String)
+  id = db.Column(db.Integer, primary_key=True)
+  description_of_original_analysis = db.Column(db.String)
+    
+  def __init__(self, description):
+    self.description_of_original_analysis = description
 
-    def __init__(self, description):
-        self.description_of_original_analysis = description
-
-    def __repr__(self):
-        return "<Analysis(id='%r', description='%s')>" % (self.id, self.description_of_original_analysis)
+  def __repr__(self):
+    return "<Analysis(id='%r', description='%s')>" % (self.id, self.description_of_original_analysis)
 
 
 
 # Relationships from here on are uncomplete
     
 class RequestNotification(db.Model):
-    __tablename__ ='request_notifications'
+  __tablename__ ='request_notifications'
     
-    id = db.Column(db.Integer, primary_key=True)
-    description_of_recast_potential = db.Column(db.Integer, primary_key=True)
+  id = db.Column(db.Integer, primary_key=True)
+  description_of_recast_potential = db.Column(db.Integer, primary_key=True)
     #relationship with analysis
     #relationship with model
     
-    def __repr__(self):
-        return "RequestNotification(descriptionOfRecastPotential='%s')>"
-
+  def __repr__(self):
+    return "RequestNotification(descriptionOfRecastPotential='%s')>" %(self.iddescription_of_recast_potential)
 
 
 class ScanRequest(db.Model):
-    __tablename__ = 'scan_requests'
+  __tablename__ = 'scan_requests'
     
-
-    id = db.Column(db.Integer, primary_key=True)
+  id = db.Column(db.Integer, primary_key=True)
     #relationship with model
     #relationship with analysis, user, 
     #relationship with point_request
     
-    def __repr__(self):
-        return "<ScanRequest()>"
+  def __repr__(self):
+    return "<ScanRequest()>"
+
 
 class PointProcess(db.Model):
-    __tablename__ = 'point_processes'
+  __tablename__ = 'point_processes'
     
-    id = db.Column(db.Integer, primary_key=True)
+  id = db.Column(db.Integer, primary_key=True)
     #relationship with analyis
     #relationship with model
     #relationship with user
     
-    def __repr__(self):
-        return "PointProcess()>"
+  def __repr__(self):
+    return "PointProcess()>"
+
+
+class BasicRequest(db.Model):
+  __tablename__ = 'basic_requests'
+  
+  id = db.Column(db.Integer, primary_key=True)
+  signal_events = db.Column(db.PickleType)
+  number_of_events = db.Column(db.Integer)
+  reference_cross_section = db.Column(db.Integer)
+  conditions_description = db.Column(db.Integer)
+  
+  def __repr__(self):
+    return "<BasicRequest(LHE file='%s', numberOfEvents='%s', referenceCrossSection='%s', conditions description='%s')>" % (self.signal_events, self.number_of_events, self.reference_cross_section, self.conditions_description)
 
 
 class ScanResponse(db.Model):
-    __tablename__ = 'scan_responses'
+  __tablename__ = 'scan_responses'
     
-    id = db.Column(db.Integer, primary_key=True)
+  id = db.Column(db.Integer, primary_key=True)
     
-    def __repr__(self):
-        return "<ScanResponse()>"
-    
-
+  def __repr__(self):
+    return "<ScanResponse()>"
     
 class PointResponse(db.Model):
-    __tablename__ = 'point_responses'
+  __tablename__ = 'point_responses'
     
-    id = db.Column(db.Integer, primary_key=True)
-    lumi_weighted_efficiency = db.Colum(db.Double)
-    total_luminosity = db.Column(db.Double)
-    lower_1sig_limit_on_cross_section_wrt_reference = db.Column(db.Double)
-    upper_1sig_limit_on_cross_section_wrt_reference = db.Column(db.Double)
-    lower_2sig_limit_on_cross_section_wrt_reference = db.Column(db.Double)
-    upper_2sig_limit_on_cross_section_wrt_reference = db.Column(db.Double)
-    merged_signal_template_wrt_reference = db.Column(db.PickleType)
-    log_likelihood_at_reference = db.Column(db.Double)
+  id = db.Column(db.Integer, primary_key=True)
+  lumi_weighted_efficiency = db.Colum(db.Double)
+  total_luminosity = db.Column(db.Double)
+  lower_1sig_limit_on_cross_section_wrt_reference = db.Column(db.Double)
+  upper_1sig_limit_on_cross_section_wrt_reference = db.Column(db.Double)
+  lower_2sig_limit_on_cross_section_wrt_reference = db.Column(db.Double)
+  upper_2sig_limit_on_cross_section_wrt_reference = db.Column(db.Double)
+  merged_signal_template_wrt_reference = db.Column(db.PickleType)
+  log_likelihood_at_reference = db.Column(db.Double)
     
 
-    def __repr__(self):
-        return "<PointResponse(lumiWeightedEfficiency='%d', totalLuminosity='%d', lower1sigLimitOnCrossSectionWrtReference='%d', upper1sigLimitOnCrossSectionWrtReference='%d', lower2sigLimitOnCrossSectionWrtReference='%d', upper2sigLimitOnCrossSectionWrtReference='%d', logLikelihoodAtReference='%d')>" % \
+  def __repr__(self):
+    return "<PointResponse(lumiWeightedEfficiency='%d', totalLuminosity='%d', lower1sigLimitOnCrossSectionWrtReference='%d', upper1sigLimitOnCrossSectionWrtReference='%d', lower2sigLimitOnCrossSectionWrtReference='%d', upper2sigLimitOnCrossSectionWrtReference='%d', logLikelihoodAtReference='%d')>" % \
 (self.lumi_weighted_efficiency, self.total_lumininosity, self.lower_1sig_Limit)on_cross_section_wrt_reference, self.upper_1sig_limit_on_cross_section_wrt_reference, self.lower_2sig_limit_on_cross_section_wrt_reference, self.upper_2sig_limit_on_cross_section_wrt_reference, self.log_likelihood_at_reference)
     
 
 class BasicResponse(db.Model):
-    __tablename__ = 'basic_responses'
+  __tablename__ = 'basic_responses'
 
-    id = db.Column(db.Integer, primary_key=True)
-    overall_efficiency = db.Column(db.Double)
-    nominal_luminosity = db.Column(db.Double)
-    lower_1sig_limit_on_cross_section = db.Column(db.Double)
-    upper_1sig_limit_on_cross_section = db.Column(db.Double)
-    lower_2sig_limit_on_cross_section = db.Column(db.Double)
-    upper_2sig_limit_on_cross_section = db.Column(db.Double)
-    lower_1sig_on_rate = db.Column(db.Double)
-    upper_1sig_on_rate = db.Column(db.Double)
-    lower_2sig_limit_on_rate = db.Column(db.Double)
-    upper_2sig_limit_on_rate = db.Column(db.Double)
-    signal_template = db.Column(db.PickleType)
-    log_likelihood_at_reference = db.Column(db.Double)
-    reference_cross_section = db.Column(db.Double)
+  id = db.Column(db.Integer, primary_key=True)
+  overall_efficiency = db.Column(db.Double)
+  nominal_luminosity = db.Column(db.Double)
+  lower_1sig_limit_on_cross_section = db.Column(db.Double)
+  upper_1sig_limit_on_cross_section = db.Column(db.Double)
+  lower_2sig_limit_on_cross_section = db.Column(db.Double)
+  upper_2sig_limit_on_cross_section = db.Column(db.Double)
+  lower_1sig_on_rate = db.Column(db.Double)
+  upper_1sig_on_rate = db.Column(db.Double)
+  lower_2sig_limit_on_rate = db.Column(db.Double)
+  upper_2sig_limit_on_rate = db.Column(db.Double)
+  signal_template = db.Column(db.PickleType)
+  log_likelihood_at_reference = db.Column(db.Double)
+  reference_cross_section = db.Column(db.Double)
 
-    def __repr__(self):
-        return "<BasicResponse(overallEfficiency='%f', nominalLuminosity='%f;, \
+  def __repr__(self):
+    return "<BasicResponse(overallEfficiency='%f', nominalLuminosity='%f;, \
 lower1sigLimitOnCrossSection='%d', upper1sigLimitOnCrossSection='%d', lower2sigLimitOnCrossSection='%d', upper2sigLimitOnCrossSection='%d', lower1sigLimitOnRate='%d', upper1sigLimitOnRate='%d', lower2sigLimitOnRate='%d', upper2sigLimitOnRate='%d', logLikelihoodAtReference='%d', referenceCrossSection='%d')>" % \
 (self.overall_efficiency, self.nominal_luminosity, self.lower_1sig_limit_on_cross_section, self.upper_1sig_limit_on_cross_section, self.lower_2sig_limit_on_cross_section, self.upper_2sig_limit_on_cross_section, self.lower_1sig_limit_on_rate, self.upper_1sig_limit_on_rate, self.lower_2sig_limit_on_rate, self.upper_2sig_limit_on_rate, self.log_likelihood_at_reference, self.reference_cross_section)
         
