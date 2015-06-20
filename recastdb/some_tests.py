@@ -41,12 +41,12 @@ from models import LHEFile
 from models import BasicRequest
 
 lheFile = LHEFile(file_name="test file", path="/files/")
-basicR = BasicRequest(number_of_events=50, reference_cross_section=30, conditions_description=30, analysis=analysis2, file_name=[lheFile])
+basicR = BasicRequest(number_of_events=50, reference_cross_section=30, conditions_description=30, file_name=[lheFile])
 
 from models import PointRequest
 
 
-pointR = PointRequest(analysis=analysis2, model=model1)
+pointR = PointRequest(model=model1)
 
 from models import ScanRequest
 
@@ -84,16 +84,16 @@ histo = Histogram(file_name="histo.root", file_path="./", histo_name="hist", his
 
 from models import BasicResponse
 
-basicResponse = BasicResponse(overall_efficiency=20.3, nominal_luminosity=3.4, lower_1sig_limit_on_cross_section=4.3, upper_1sig_limit_on_cross_section=4.9, lower_2sig_limit_on_cross_section=6.19, upper_2sig_limit_on_cross_section=4.23, lower_1sig_limit_on_rate=43.9, upper_1sig_limit_on_rate=32.4, lower_2sig_limit_on_rate=32.9, upper_2sig_limit_on_rate=32.43, signal_template=[histo], log_likelihood_at_reference=32.23, reference_cross_section=32439.32, analysis=analysis2, model=model1, basic_request=basicR)
+basicResponse = BasicResponse(overall_efficiency=20.3, nominal_luminosity=3.4, lower_1sig_limit_on_cross_section=4.3, upper_1sig_limit_on_cross_section=4.9, lower_2sig_limit_on_cross_section=6.19, upper_2sig_limit_on_cross_section=4.23, lower_1sig_limit_on_rate=43.9, upper_1sig_limit_on_rate=32.4, lower_2sig_limit_on_rate=32.9, upper_2sig_limit_on_rate=32.43, signal_template=[histo], log_likelihood_at_reference=32.23, reference_cross_section=32439.32, model=model1, basic_request=basicR)
 
 
 from models import PointResponse
 
-pointResponse = PointResponse(lumi_weighted_efficiency=32.21, total_luminosity=32.43, lower_1sig_limit_on_cross_section_wrt_reference=3.5, upper_1sig_limit_on_cross_section_wrt_reference=321.2, lower_2sig_limit_on_cross_section_wrt_reference=32.32, upper_2sig_limit_on_cross_section_wrt_reference=3.32, merged_signal_template_wrt_reference=[histo], log_likelihood_at_reference=32.12, analysis=analysis2, model=model1, basic_answers=[basicResponse], point_request=pointR)
+pointResponse = PointResponse(lumi_weighted_efficiency=32.21, total_luminosity=32.43, lower_1sig_limit_on_cross_section_wrt_reference=3.5, upper_1sig_limit_on_cross_section_wrt_reference=321.2, lower_2sig_limit_on_cross_section_wrt_reference=32.32, upper_2sig_limit_on_cross_section_wrt_reference=3.32, merged_signal_template_wrt_reference=[histo], log_likelihood_at_reference=32.12, model=model1, basic_answers=[basicResponse], point_request=pointR)
 
 from models import ScanResponse
 
-scanResponse = ScanResponse(analysis=analysis2, model=model1, scan_response=[pointResponse], scan_request=scanR)
+scanResponse = ScanResponse(model=model1, scan_response=[pointResponse], scan_request=scanR)
 
 
 from models import RequestNotification

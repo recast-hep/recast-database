@@ -84,12 +84,12 @@ analysis_subscriptions = db.Table('analysis_subscriptions',
 
 point_request_subscriptions = db.Table('point_request_subscriptions',
                                        db.Column('subscriber_id', db.Integer, db.ForeignKey('users.id')),
-                                       db.Column('request.id', db.Integer, db.ForeignKey('point_requests.id')))
+                                       db.Column('request_id', db.Integer, db.ForeignKey('point_requests.id')))
                  
 
 basic_request_subscriptions = db.Table('basic_request_subscriptions',
                                        db.Column('subscriber_id', db.Integer, db.ForeignKey('users.id')),
-                                       db.Column('request.id', db.Integer, db.ForeignKey('basic_requests.id')))
+                                       db.Column('request_id', db.Integer, db.ForeignKey('basic_requests.id')))
 
 
 class RunCondition(db.Model):
@@ -149,11 +149,6 @@ class Analysis(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   description_of_original_analysis = db.Column(db.String, nullable=False)
   scan_requests = db.relationship('ScanRequest', backref='analysis', lazy='dynamic')
-  point_requests = db.relationship('PointRequest', backref='analysis', lazy='dynamic')
-  basic_requests = db.relationship('BasicRequest', backref='analysis', lazy='dynamic')
-  scan_responses = db.relationship('ScanResponse', backref='analysis', lazy='dynamic')
-  point_responses = db.relationship('PointResponse', backref='analysis', lazy='dynamic')
-  basic_responses = db.relationship('BasicResponse', backref='analysis', lazy='dynamic')
   owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
   run_condition_id = db.Column(db.Integer, db.ForeignKey('run_conditions.id'))
   subscribers = db.relationship('User', secondary=analysis_subscriptions)
@@ -223,7 +218,6 @@ class ScanRequest(db.Model):
 class PointRequest(db.Model):
   __tablename__ = 'point_requests'    
   id = db.Column(db.Integer, primary_key=True)
-  analysis_id = db.Column(db.Integer, db.ForeignKey('analysis.id'))
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   parameter_points = db.relationship('ParameterPoint', backref='point_request', lazy='dynamic')
   requests = db.relationship('BasicRequest', backref='point_request', lazy='dynamic')
@@ -242,7 +236,6 @@ class BasicRequest(db.Model):
   number_of_events = db.Column(db.Integer, nullable=False)
   reference_cross_section = db.Column(db.Integer)
   conditions_description = db.Column(db.Integer)
-  analysis_id = db.Column(db.Integer, db.ForeignKey('analysis.id'))
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   basic_responses = db.relationship('BasicResponse', backref='basic_request', lazy='dynamic')
   point_request_id = db.Column(db.Integer, db.ForeignKey('point_requests.id'))
@@ -287,7 +280,6 @@ class LHEFile(db.Model):
 class ScanResponse(db.Model):
   __tablename__ = 'scan_responses'
   id = db.Column(db.Integer, primary_key=True)
-  analysis_id = db.Column(db.Integer, db.ForeignKey('analysis.id'))
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   scan_response = db.relationship('PointResponse', backref='scan_response', lazy='dynamic')
   scan_request_id = db.Column(db.Integer, db.ForeignKey('scan_requests.id'))
@@ -306,7 +298,6 @@ class PointResponse(db.Model):
   upper_2sig_limit_on_cross_section_wrt_reference = db.Column(db.Float)
   merged_signal_template_wrt_reference = db.relationship('Histogram', backref='point_response', lazy='dynamic')
   log_likelihood_at_reference = db.Column(db.Float)
-  analysis_id = db.Column(db.Integer, db.ForeignKey('analysis.id'))
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   basic_answers = db.relationship('BasicResponse', backref='point_response', lazy='dynamic')
   scan_response_id = db.Column(db.Integer, db.ForeignKey('scan_responses.id'))
@@ -332,7 +323,6 @@ class BasicResponse(db.Model):
   signal_template = db.relationship('Histogram', backref='basic_response', lazy='dynamic')
   log_likelihood_at_reference = db.Column(db.Float)
   reference_cross_section = db.Column(db.Float)
-  analysis_id = db.Column(db.Integer, db.ForeignKey('analysis.id'))
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   point_response_id = db.Column(db.Integer, db.ForeignKey('point_responses.id'))
   basic_request_id = db.Column(db.Integer, db.ForeignKey('basic_requests.id'))
