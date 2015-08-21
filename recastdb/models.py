@@ -95,7 +95,8 @@ basic_request_subscriptions = db.Table('basic_request_subscriptions',
 class RunCondition(db.Model):
   __tablename__ = 'run_conditions'
   id = db.Column(db.Integer, primary_key=True)
-  title = db.Column(db.String)
+  name = db.Column(db.String)
+  description = db.Column(db.String)
   analyses = db.relationship('Analysis',backref='run_condition',lazy='dynamic')
   
   def __repr__(self):
@@ -147,7 +148,13 @@ class Model(db.Model):
 class Analysis(db.Model):
   __tablename__ = 'analysis'
   id = db.Column(db.Integer, primary_key=True)
-  description_of_original_analysis = db.Column(db.String, nullable=False)
+  title = db.Column(db.String, nullable=False)
+  collaboration = db.Column(db.String)
+  e_print = db.Column(db.String)
+  journal = db.Column(db.String)
+  doi = db.Column(db.String)
+  inspire_URL = db.Column(db.String)
+  description = db.Column(db.String)
   scan_requests = db.relationship('ScanRequest', backref='analysis', lazy='dynamic')
   owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
   run_condition_id = db.Column(db.Integer, db.ForeignKey('run_conditions.id'))
@@ -203,6 +210,8 @@ class ScanRequest(db.Model):
   __tablename__ = 'scan_requests'    
   id = db.Column(db.Integer, primary_key=True)
   description_of_model = db.Column(db.String)
+  reason_for_request = db.Column(db.String)
+  additional_information = db.Column(db.String)
   analysis_id = db.Column(db.Integer, db.ForeignKey('analysis.id'))
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   scan_points = db.relationship('PointRequest', backref='scan_request', lazy='dynamic')
