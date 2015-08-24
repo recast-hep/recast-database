@@ -100,7 +100,7 @@ class RunCondition(db.Model):
   analyses = db.relationship('Analysis',backref='run_condition',lazy='dynamic')
   
   def __repr__(self):
-    return "<RunCondition(title='%s')>" % (self.title)
+    return "<RunCondition(name='%s', description='%s')>" % (self.name, self.description)
 
 class Processing(db.Model):
   """ this is an actual request to process the recast request """
@@ -161,7 +161,7 @@ class Analysis(db.Model):
   subscribers = db.relationship('User', secondary=analysis_subscriptions)
 
   def __repr__(self):
-    return "<Analysis(description='%s', owner='%r')>" % (self.description_of_original_analysis, self.owner_id)
+    return "<Analysis(title='%s', collaboration='%s', e_print='%s', journal='%s', doi='%s', inspire_URL='%s', description='%s', owner='%r')>" % (self.title, self.collaboration, self.e_print, self.journal, self.doi, self.inspire_URL, self.description, self.owner_id)
 
 
 # RequestNotification <-> ScanRequest: one-to-one
