@@ -26,71 +26,55 @@ from database import db
 #   * a user can be subscribed to multiple requests
 #
 
-"""
-class RunCondition(db.Model):
-  id = db.Column(db.Integer, primary_key=True)
-  title = db.Column(db.String)
-  analyses = db.relationship('Analysis',backref='runcondition',lazy='dynamic')
-
 class User(db.Model):
+  __tablename__ = 'users'
   id = db.Column(db.Integer, primary_key=True)
-  username = db.Column(db.String)
-  analyses = db.relationship('Analysis',backref='owner',lazy='dynamic')
+  name = db.Column(db.String, nullable=False)
+  email = db.Column(db.String, nullable=False, unique=False)
+  analyses = db.relationship('Analysis', backref='user', lazy='dynamic')
+  requests = db.relationship('ScanRequest', backref='requester', lazy='dynamic')
+  point_requests = db.relationship('PointRequest', backref='user', lazy='dynamic')
+  basic_requests = db.relationship('BasicRequest', backref='user', lazy='dynamic')
+  subscriptions = db.relationship('Subscription', backref='subscriber', lazy='dynamic')
+
+  def __init__(self, name, email):
+    self.name = name
+    self.email = email
+
+  def __repr__(self):
+    return "<User(name='%s', email='%s')>" % (self.name, self.email)
 
 class Analysis(db.Model):
+  __tablename__ = 'analysis'
   id = db.Column(db.Integer, primary_key=True)
-  title = db.Column(db.String)
-  runcondition_id = db.Column(db.Integer,db.ForeignKey('run_condition.id'))
-  owner_id = db.Column(db.Integer,db.ForeignKey('user.id'))
-  requests = db.relationship('Request',backref='analysis',lazy='dynamic')
+  title = db.Column(db.String, nullable=False)
+  collaboration = db.Column(db.String)
+  e_print = db.Column(db.String)
+  journal = db.Column(db.String)
+  doi = db.Column(db.String)
+  inspire_URL = db.Column(db.String)
+  description = db.Column(db.Text)
+  scan_requests = db.relationship('ScanRequest', backref='analysis', lazy='dynamic')
+  owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+  run_condition_id = db.Column(db.Integer, db.ForeignKey('run_conditions.id'))
+  subscriptions = db.relationship('Subscription', backref='analysis', lazy='dynamic')
 
+  def __repr__(self):
+    return "<Analysis(title='%s', collaboration='%s', e_print='%s', journal='%s', doi='%s', inspire_URL='%s', description='%s', owner='%r')>" % (self.title, self.collaboration, self.e_print, self.journal, self.doi, self.inspire_URL, self.description, self.owner_id)
 
-
-class Request(db.Model):
+class Subscription(db.Model):
+  __tablename__ = 'subscriptions'
   id = db.Column(db.Integer, primary_key=True)
-  title = db.Column(db.String)
-  analysis_id = db.Column(db.Integer,db.ForeignKey('analysis.id'))
-  responses = db.relationship('Response', backref='request', lazy = 'dynamic')
-  parameter_points = db.relationship('ParameterPoint',backref = 'request',lazy='dynamic')
-  subscribers = db.relationship('User',secondary=subscriptions)
-  
-  
-class ParameterPoint(db.Model):
-  id = db.Column(db.Integer, primary_key=True)
-  title = db.Column(db.String)
-  request_id = db.Column(db.Integer,db.ForeignKey('request.id'))
+  subscription_type = db.Column(db.String)
+  description = db.Column(db.Text)
+  requirements = db.Column(db.Text)
+  notifications = db.Column(db.String)
+  authoritative = db.Column(db.Boolean, default=False)
+  subscriber_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+  analysis_id = db.Column(db.Integer, db.ForeignKey('analysis.id'))
 
-class Response(db.Model):
-  id = db.Column(db.Integer, primary_key=True)
-  title = db.Column(db.String)
-  request_id = db.Column(db.Integer,db.ForeignKey('request.id'))
-
-
-subscriptions = db.Table('subscriptions',
-                         db.Column('subscriber_id',db.Integer,db.ForeignKey('user.id')),
-                         db.Column('request_id',db.Integer,db.ForeignKey('request.id'))
-                         )
-"""
-
-request_subscriptions = db.Table('request_subscriptions',
-                         db.Column('subscriber_id',db.Integer,db.ForeignKey('users.id')),
-                         db.Column('request_id',db.Integer,db.ForeignKey('scan_requests.id'))
-                         )
-
-analysis_subscriptions = db.Table('analysis_subscriptions',
-                                  db.Column('subscriber_id', db.Integer, db.ForeignKey('users.id')),
-                                  db.Column('analysis_id', db.Integer, db.ForeignKey('analysis.id'))
-                                  )
-
-point_request_subscriptions = db.Table('point_request_subscriptions',
-                                       db.Column('subscriber_id', db.Integer, db.ForeignKey('users.id')),
-                                       db.Column('request_id', db.Integer, db.ForeignKey('point_requests.id')))
-                 
-
-basic_request_subscriptions = db.Table('basic_request_subscriptions',
-                                       db.Column('subscriber_id', db.Integer, db.ForeignKey('users.id')),
-                                       db.Column('request_id', db.Integer, db.ForeignKey('basic_requests.id')))
-
+  def __repr__(self):
+    return "<Subscription(subscription_type='%s', description='%s', requirements='%s', notifications='%s', authoritative='%s')>" % (self.subscription_type, self.description, self.requirements, self.notifications, self.authoritative)
 
 class RunCondition(db.Model):
   __tablename__ = 'run_conditions'
@@ -111,23 +95,6 @@ class Processing(db.Model):
   def __repr__(self):
     return "<Processing(job uid='%r', celery task id='%r')>" % (self.jobuid, self.celerytaskid)
 
-class User(db.Model):
-  __tablename__ = 'users'
-  id = db.Column(db.Integer, primary_key=True)
-  name = db.Column(db.String, nullable=False)
-  email = db.Column(db.String, nullable=False, unique=False)
-  analyses = db.relationship('Analysis', backref='user', lazy='dynamic')
-  requests = db.relationship('ScanRequest', backref='requester', lazy='dynamic')
-  point_requests = db.relationship('PointRequest', backref='user', lazy='dynamic')
-  basic_requests = db.relationship('BasicRequest', backref='user', lazy='dynamic')
-
-  def __init__(self, name, email):
-    self.name = name
-    self.email = email
-
-  def __repr__(self):
-    return "<User(name='%s', email='%s')>" % (self.name, self.email)
-
 class Model(db.Model):
   __tablename__ = 'models'
   id = db.Column(db.Integer, primary_key=True)
@@ -144,25 +111,6 @@ class Model(db.Model):
 
   def __repr__(self):
     return "<Model(description='%s')>" % (self.description_of_model)
-
-class Analysis(db.Model):
-  __tablename__ = 'analysis'
-  id = db.Column(db.Integer, primary_key=True)
-  title = db.Column(db.String, nullable=False)
-  collaboration = db.Column(db.String)
-  e_print = db.Column(db.String)
-  journal = db.Column(db.String)
-  doi = db.Column(db.String)
-  inspire_URL = db.Column(db.String)
-  description = db.Column(db.String)
-  scan_requests = db.relationship('ScanRequest', backref='analysis', lazy='dynamic')
-  owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-  run_condition_id = db.Column(db.Integer, db.ForeignKey('run_conditions.id'))
-  subscribers = db.relationship('User', secondary=analysis_subscriptions)
-
-  def __repr__(self):
-    return "<Analysis(title='%s', collaboration='%s', e_print='%s', journal='%s', doi='%s', inspire_URL='%s', description='%s', owner='%r')>" % (self.title, self.collaboration, self.e_print, self.journal, self.doi, self.inspire_URL, self.description, self.owner_id)
-
 
 # RequestNotification <-> ScanRequest: one-to-one
 #   ( Not sure about what notifications mean )
@@ -210,15 +158,14 @@ class ScanRequest(db.Model):
   __tablename__ = 'scan_requests'    
   id = db.Column(db.Integer, primary_key=True)
   description_of_model = db.Column(db.String)
-  reason_for_request = db.Column(db.String)
-  additional_information = db.Column(db.String)
+  reason_for_request = db.Column(db.Text)
+  additional_information = db.Column(db.Text)
   analysis_id = db.Column(db.Integer, db.ForeignKey('analysis.id'))
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   scan_points = db.relationship('PointRequest', backref='scan_request', lazy='dynamic')
   parameters = db.relationship('Parameters', backref='scan_request', lazy='dynamic')
   scan_responses = db.relationship('ScanResponse', uselist=False, backref='scan_request')
   notifications = db.relationship('RequestNotification', uselist=False, backref='scan_request')
-  subscribers = db.relationship('User', secondary=request_subscriptions)
   requester_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
   def __repr__(self):
@@ -231,7 +178,6 @@ class PointRequest(db.Model):
   parameter_points = db.relationship('ParameterPoint', backref='point_request', lazy='dynamic')
   requests = db.relationship('BasicRequest', backref='point_request', lazy='dynamic')
   point_responses = db.relationship('PointResponse', uselist=False, backref='point_request')
-  subscribers = db.relationship('User', secondary=point_request_subscriptions)
   scan_request_id = db.Column(db.Integer, db.ForeignKey('scan_requests.id'))
   requester_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
@@ -248,7 +194,6 @@ class BasicRequest(db.Model):
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   basic_responses = db.relationship('BasicResponse', backref='basic_request', lazy='dynamic')
   point_request_id = db.Column(db.Integer, db.ForeignKey('point_requests.id'))
-  subscribers = db.relationship('User', secondary=basic_request_subscriptions)
   requester_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
   def __repr__(self):
