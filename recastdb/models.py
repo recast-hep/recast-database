@@ -160,6 +160,8 @@ class ScanRequest(db.Model):
   description_of_model = db.Column(db.String)
   reason_for_request = db.Column(db.Text)
   additional_information = db.Column(db.Text)
+  status = db.Column(db.Text, default="Incomplete")
+  post_date = db.Column(db.Date)
   analysis_id = db.Column(db.Integer, db.ForeignKey('analysis.id'))
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   scan_points = db.relationship('PointRequest', backref='scan_request', lazy='dynamic')
