@@ -32,7 +32,8 @@ class User(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   name = db.Column(db.String, nullable=False)
   email = db.Column(db.String, unique=False)
-  token = db.Column(db.String, unique=True)
+  orcid_id = db.Column(db.String, unique=True)
+  access_tokens = db.relationships('AccessToken', backref='user', lazy='dynamic')
   analyses = db.relationship('Analysis', backref='user', lazy='dynamic')
   requests = db.relationship('ScanRequest', backref='requester', lazy='dynamic')
   point_requests = db.relationship('PointRequest', backref='user', lazy='dynamic')
@@ -50,6 +51,14 @@ class User(db.Model):
 
   def __repr__(self):
     return "<User(name='%s', email='%s', token='%s')>" % (self.name, self.email, self.token)
+
+class AccessToken(db.Model):
+  __tablename__ = 'access_tokens'
+  token = db.Column(db.String, unique=True)
+  user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+  
+  def __repr__(self):
+    return "<AccessToken(token='%s', user_id='%s')>" % (self.token, self.user_id)
 
 class Analysis(db.Model):
   __tablename__ = 'analysis'
