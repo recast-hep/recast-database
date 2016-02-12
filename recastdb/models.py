@@ -54,6 +54,7 @@ class User(db.Model):
 
 class AccessToken(db.Model):
   __tablename__ = 'access_tokens'
+  id = db.Column(db.Integer, primary_key=True)
   token = db.Column(db.String, unique=True)
   user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
   
