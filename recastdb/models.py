@@ -1,4 +1,5 @@
 from database import db
+from sqlalchemy.ext.hybrid import hybrid_property
 
 # relations
 # Analysis <-> Run Condition: many-to-one
@@ -24,7 +25,7 @@ from database import db
 # Request <-> Subscriber (User): many-to-many:
 #   * a request can have multiple subscribers
 #   * a user can be subscribed to multiple requests
-#
+#  
 
 class User(db.Model):
   __tablename__ = 'users'
@@ -40,6 +41,10 @@ class User(db.Model):
   def __init__(self, name, email):
     self.name = name
     self.email = email
+
+  @hybrid_property
+  def _id(self):
+    return self.id
 
   def __repr__(self):
     return "<User(name='%s', email='%s')>" % (self.name, self.email)
@@ -59,6 +64,10 @@ class Analysis(db.Model):
   run_condition_id = db.Column(db.Integer, db.ForeignKey('run_conditions.id'))
   subscriptions = db.relationship('Subscription', backref='analysis', lazy='dynamic')
 
+  @hybrid_property
+  def _id(self):
+    return self.id
+
   def __repr__(self):
     return "<Analysis(title='%s', collaboration='%s', e_print='%s', journal='%s', doi='%s', inspire_URL='%s', description='%s', owner='%r')>" % (self.title, self.collaboration, self.e_print, self.journal, self.doi, self.inspire_URL, self.description, self.owner_id)
 
@@ -73,6 +82,10 @@ class Subscription(db.Model):
   subscriber_id = db.Column(db.Integer, db.ForeignKey('users.id'))
   analysis_id = db.Column(db.Integer, db.ForeignKey('analysis.id'))
 
+  @hybrid_property
+  def _id(self):
+    return self.id
+
   def __repr__(self):
     return "<Subscription(subscription_type='%s', description='%s', requirements='%s', notifications='%s', authoritative='%s')>" % (self.subscription_type, self.description, self.requirements, self.notifications, self.authoritative)
 
@@ -82,6 +95,10 @@ class RunCondition(db.Model):
   name = db.Column(db.String)
   description = db.Column(db.String)
   analyses = db.relationship('Analysis',backref='run_condition',lazy='dynamic')
+
+  @hybrid_property
+  def _id(self):
+    return self.id  
   
   def __repr__(self):
     return "<RunCondition(name='%s', description='%s')>" % (self.name, self.description)
@@ -91,6 +108,10 @@ class Processing(db.Model):
   id            = db.Column(db.Integer, primary_key = True)
   jobguid       = db.Column(db.String(36), unique = True)
   celerytaskid  = db.Column(db.String(36), unique = True)
+  
+  @hybrid_property
+  def _id(self):
+    return self.id
   
   def __repr__(self):
     return "<Processing(job uid='%r', celery task id='%r')>" % (self.jobuid, self.celerytaskid)
@@ -108,6 +129,10 @@ class Model(db.Model):
 
   def __init__(self, description):
     self.description_of_model = description
+    
+  @hybrid_property
+  def _id(self):
+    return self.id
 
   def __repr__(self):
     return "<Model(description='%s')>" % (self.description_of_model)
@@ -124,6 +149,10 @@ class RequestNotification(db.Model):
   description_of_model = db.Column(db.String)
   description_of_recast_potential = db.Column(db.String)
   scan_request_id = db.Column(db.Integer, db.ForeignKey('scan_requests.id'))
+
+  @hybrid_property
+  def _id(self):
+    return self.id
                                   
   def __repr__(self):
     return "RequestNotification(descriptionOfOriginalAnalysis='%s', descriptionOfModel='%s',descriptionOfRecastPotential='%s')>" %(self.description_of_original_analysis, self.description_of_model, self.description_of_recast_potential)
@@ -170,6 +199,10 @@ class ScanRequest(db.Model):
   notifications = db.relationship('RequestNotification', uselist=False, backref='scan_request')
   requester_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
+  @hybrid_property
+  def _id(self):
+    return self.id
+
   def __repr__(self):
     return "<ScanRequest(descriptionOfModel='%s')>" % (self.description_of_model)
 
@@ -182,6 +215,10 @@ class PointRequest(db.Model):
   point_responses = db.relationship('PointResponse', uselist=False, backref='point_request')
   scan_request_id = db.Column(db.Integer, db.ForeignKey('scan_requests.id'))
   requester_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+  @hybrid_property
+  def _id(self):
+    return self.id
 
   def __repr__(self):
     return "PointRequest()>"
@@ -198,6 +235,10 @@ class BasicRequest(db.Model):
   point_request_id = db.Column(db.Integer, db.ForeignKey('point_requests.id'))
   requester_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
+  @hybrid_property
+  def _id(self):
+    return self.id
+
   def __repr__(self):
     return "<BasicRequest(numberOfEvents='%s', referenceCrossSection='%s', conditions description='%s')>" % (self.number_of_events, self.reference_cross_section, self.conditions_description)
 
@@ -208,6 +249,10 @@ class ParameterPoint(db.Model):
   value = db.Column(db.Float)
   point_request_id = db.Column(db.Integer, db.ForeignKey('point_requests.id'))
 
+  @hybrid_property
+  def _id(self):
+    return self.id
+
   def __repr__(self):
     return "<ParameterPoints(title='%s', value='%s')>" % (self.title, self.value)
 
@@ -216,6 +261,10 @@ class Parameters(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   parameter = db.Column(db.Integer)
   scan_request_id = db.Column(db.Integer, db.ForeignKey('scan_requests.id'))
+
+  @hybrid_property
+  def _id(self):
+    return self.id
 
   def __repr__(self):
     return "<Parameters(parameter='%s')>" % (self.parameter)
@@ -228,6 +277,10 @@ class LHEFile(db.Model):
   doi = db.Column(db.String)    #Digital Object Identifier
   basic_request_id = db.Column(db.Integer, db.ForeignKey('basic_requests.id'))
 
+  @hybrid_property
+  def _id(self):
+    return self.id
+
   def __repr__(self):
     return "<LHEFile(file name='%s', path='%s', doi='%s')>" % (self.file_name, self.path, self.doi)
 
@@ -239,6 +292,10 @@ class ScanResponse(db.Model):
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   scan_response = db.relationship('PointResponse', backref='scan_response', lazy='dynamic')
   scan_request_id = db.Column(db.Integer, db.ForeignKey('scan_requests.id'))
+
+  @hybrid_property
+  def _id(self):
+    return self.id
 
   def __repr__(self):
     return "<ScanResponse()>"
@@ -258,6 +315,10 @@ class PointResponse(db.Model):
   basic_answers = db.relationship('BasicResponse', backref='point_response', lazy='dynamic')
   scan_response_id = db.Column(db.Integer, db.ForeignKey('scan_responses.id'))
   point_request_id = db.Column(db.Integer, db.ForeignKey('point_requests.id'))
+
+  @hybrid_property
+  def _id(self):
+    return self.id
                                
   def __repr__(self):
     return "<PointResponse(lumiWeightedEfficiency='%r', totalLuminosity='%r', lower1sigLimitOnCrossSectionWrtReference='%r', upper1sigLimitOnCrossSectionWrtReference='%r', lower2sigLimitOnCrossSectionWrtReference='%r', upper2sigLimitOnCrossSectionWrtReference='%r', logLikelihoodAtReference='%r')>" % \
@@ -283,6 +344,10 @@ class BasicResponse(db.Model):
   point_response_id = db.Column(db.Integer, db.ForeignKey('point_responses.id'))
   basic_request_id = db.Column(db.Integer, db.ForeignKey('basic_requests.id'))
 
+  @hybrid_property
+  def _id(self):
+    return self.id
+
   def __repr__(self):
     return "<BasicResponse(overallEfficiency='%f', nominalLuminosity='%f', \
 lower1sigLimitOnCrossSection='%r', upper1sigLimitOnCrossSection='%r', lower2sigLimitOnCrossSection='%r', upper2sigLimitOnCrossSection='%r', lower1sigLimitOnRate='%r', upper1sigLimitOnRate='%r', lower2sigLimitOnRate='%r', upper2sigLimitOnRate='%r', logLikelihoodAtReference='%r', referenceCrossSection='%r')>" % \
@@ -297,6 +362,10 @@ class Histogram(db.Model):
   histo_path = db.Column(db.String)
   point_response_id = db.Column(db.Integer, db.ForeignKey('point_responses.id'))
   basic_response_id = db.Column(db.Integer, db.ForeignKey('basic_responses.id'))
+
+  @hybrid_property
+  def _id(self):
+    return self.id
 
   def __repr__(self):
     return "<Histogram(file_name='%s', file_path='%s', histo_name='%s', histo_path='%s')>" % (self.file_name, self.file_path, self.histo_name, self.histo_path)
