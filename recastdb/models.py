@@ -31,23 +31,25 @@ class User(db.Model):
   __tablename__ = 'users'
   id = db.Column(db.Integer, primary_key=True)
   name = db.Column(db.String, nullable=False)
-  email = db.Column(db.String, nullable=False, unique=False)
+  email = db.Column(db.String, unique=False)
+  token = db.Column(db.String, unique=True)
   analyses = db.relationship('Analysis', backref='user', lazy='dynamic')
   requests = db.relationship('ScanRequest', backref='requester', lazy='dynamic')
   point_requests = db.relationship('PointRequest', backref='user', lazy='dynamic')
   basic_requests = db.relationship('BasicRequest', backref='user', lazy='dynamic')
   subscriptions = db.relationship('Subscription', backref='subscriber', lazy='dynamic')
 
-  def __init__(self, name, email):
+  def __init__(self, name, email=None, token=None):
     self.name = name
     self.email = email
+    self.token = token
 
   @hybrid_property
   def _id(self):
     return self.id
 
   def __repr__(self):
-    return "<User(name='%s', email='%s')>" % (self.name, self.email)
+    return "<User(name='%s', email='%s', token='%s')>" % (self.name, self.email, self.token)
 
 class Analysis(db.Model):
   __tablename__ = 'analysis'
