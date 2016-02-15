@@ -33,7 +33,7 @@ class User(db.Model):
   name = db.Column(db.String, nullable=False)
   email = db.Column(db.String, unique=False)
   orcid_id = db.Column(db.String, unique=True)
-  access_tokens = db.relationships('AccessToken', backref='user', lazy='dynamic')
+  access_tokens = db.relationship('AccessToken', backref='user', lazy='dynamic')
   analyses = db.relationship('Analysis', backref='user', lazy='dynamic')
   requests = db.relationship('ScanRequest', backref='requester', lazy='dynamic')
   point_requests = db.relationship('PointRequest', backref='user', lazy='dynamic')
