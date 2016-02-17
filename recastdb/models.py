@@ -1,6 +1,6 @@
 from database import db
 from sqlalchemy.ext.hybrid import hybrid_property
-
+from sqlalchemy import func
 # relations
 # Analysis <-> Run Condition: many-to-one
 #   * an analysis is always for a single run condition (yes? combined analyses? 7+8 TeV?)
@@ -27,7 +27,14 @@ from sqlalchemy.ext.hybrid import hybrid_property
 #   * a user can be subscribed to multiple requests
 #  
 
-class User(db.Model):
+class CommonColumns(db.Model):
+  __abstract__ = True
+  _created = db.Column(db.DateTime, default=func.now())
+  _updated = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
+  _etag = db.Column(db.String(40))
+
+
+class User(CommonColumns):
   __tablename__ = 'users'
   id = db.Column(db.Integer, primary_key=True)
   name = db.Column(db.String, nullable=False)
@@ -50,9 +57,9 @@ class User(db.Model):
     return self.id
 
   def __repr__(self):
-    return "<User(name='%s', email='%s', token='%s')>" % (self.name, self.email, self.token)
+    return "<User(name='%s', email='%s', orcid_id='%s')>" % (self.name, self.email, self.orcid_id)
 
-class AccessToken(db.Model):
+class AccessToken(CommonColumns):
   __tablename__ = 'access_tokens'
   id = db.Column(db.Integer, primary_key=True)
   token = db.Column(db.String, unique=True)
@@ -61,7 +68,7 @@ class AccessToken(db.Model):
   def __repr__(self):
     return "<AccessToken(token='%s', user_id='%s')>" % (self.token, self.user_id)
 
-class Analysis(db.Model):
+class Analysis(CommonColumns):
   __tablename__ = 'analysis'
   id = db.Column(db.Integer, primary_key=True)
   title = db.Column(db.String, nullable=False)
@@ -83,7 +90,7 @@ class Analysis(db.Model):
   def __repr__(self):
     return "<Analysis(title='%s', collaboration='%s', e_print='%s', journal='%s', doi='%s', inspire_URL='%s', description='%s', owner='%r')>" % (self.title, self.collaboration, self.e_print, self.journal, self.doi, self.inspire_URL, self.description, self.owner_id)
 
-class Subscription(db.Model):
+class Subscription(CommonColumns):
   __tablename__ = 'subscriptions'
   id = db.Column(db.Integer, primary_key=True)
   subscription_type = db.Column(db.String)
@@ -101,9 +108,9 @@ class Subscription(db.Model):
   def __repr__(self):
     return "<Subscription(subscription_type='%s', description='%s', requirements='%s', notifications='%s', authoritative='%s')>" % (self.subscription_type, self.description, self.requirements, self.notifications, self.authoritative)
 
-class RunCondition(db.Model):
+class RunCondition(CommonColumns):
   __tablename__ = 'run_conditions'
-  id = db.Column(db.Integer, primary_key=True)
+  id = db.Column(db.Integer, primary_key=True, autoincrement=True)
   name = db.Column(db.String)
   description = db.Column(db.String)
   analyses = db.relationship('Analysis',backref='run_condition',lazy='dynamic')
@@ -115,7 +122,7 @@ class RunCondition(db.Model):
   def __repr__(self):
     return "<RunCondition(name='%s', description='%s')>" % (self.name, self.description)
 
-class Processing(db.Model):
+class Processing(CommonColumns):
   """ this is an actual request to process the recast request """
   id            = db.Column(db.Integer, primary_key = True)
   jobguid       = db.Column(db.String(36), unique = True)
@@ -128,7 +135,7 @@ class Processing(db.Model):
   def __repr__(self):
     return "<Processing(job uid='%r', celery task id='%r')>" % (self.jobuid, self.celerytaskid)
 
-class Model(db.Model):
+class Model(CommonColumns):
   __tablename__ = 'models'
   id = db.Column(db.Integer, primary_key=True)
   description_of_model = db.Column(db.String, nullable=True)
@@ -195,7 +202,7 @@ class RequestNotification(db.Model):
 
 # BasicResponse <-> Histogram: one-to-many
 
-class ScanRequest(db.Model):
+class ScanRequest(CommonColumns):
   __tablename__ = 'scan_requests'    
   id = db.Column(db.Integer, primary_key=True)
   description_of_model = db.Column(db.String)
@@ -218,7 +225,7 @@ class ScanRequest(db.Model):
   def __repr__(self):
     return "<ScanRequest(descriptionOfModel='%s')>" % (self.description_of_model)
 
-class PointRequest(db.Model):
+class PointRequest(CommonColumns):
   __tablename__ = 'point_requests'    
   id = db.Column(db.Integer, primary_key=True)
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
@@ -235,7 +242,7 @@ class PointRequest(db.Model):
   def __repr__(self):
     return "PointRequest()>"
 
-class BasicRequest(db.Model):
+class BasicRequest(CommonColumns):
   __tablename__ = 'basic_requests'  
   id = db.Column(db.Integer, primary_key=True)
   file_name = db.relationship('LHEFile', backref='basic_request', lazy='dynamic')
@@ -254,7 +261,7 @@ class BasicRequest(db.Model):
   def __repr__(self):
     return "<BasicRequest(numberOfEvents='%s', referenceCrossSection='%s', conditions description='%s')>" % (self.number_of_events, self.reference_cross_section, self.conditions_description)
 
-class ParameterPoint(db.Model):
+class ParameterPoint(CommonColumns):
   __tablename__ = 'parameter_points'
   id = db.Column(db.Integer, primary_key=True)
   title = db.Column(db.String)
@@ -268,7 +275,7 @@ class ParameterPoint(db.Model):
   def __repr__(self):
     return "<ParameterPoints(title='%s', value='%s')>" % (self.title, self.value)
 
-class Parameters(db.Model):
+class Parameters(CommonColumns):
   __tablename__ = 'parameters'
   id = db.Column(db.Integer, primary_key=True)
   parameter = db.Column(db.Integer)
@@ -281,7 +288,7 @@ class Parameters(db.Model):
   def __repr__(self):
     return "<Parameters(parameter='%s')>" % (self.parameter)
 
-class LHEFile(db.Model):
+class LHEFile(CommonColumns):
   __tablename__ = 'lhe_files'
   id = db.Column(db.Integer, primary_key=True)
   file_name = db.Column(db.String)
@@ -298,7 +305,7 @@ class LHEFile(db.Model):
 
 # Response related tables
 
-class ScanResponse(db.Model):
+class ScanResponse(CommonColumns):
   __tablename__ = 'scan_responses'
   id = db.Column(db.Integer, primary_key=True)
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
@@ -312,7 +319,7 @@ class ScanResponse(db.Model):
   def __repr__(self):
     return "<ScanResponse()>"
     
-class PointResponse(db.Model):
+class PointResponse(CommonColumns):
   __tablename__ = 'point_responses'
   id = db.Column(db.Integer, primary_key=True)
   lumi_weighted_efficiency = db.Column(db.Float, nullable=False)
@@ -336,7 +343,7 @@ class PointResponse(db.Model):
     return "<PointResponse(lumiWeightedEfficiency='%r', totalLuminosity='%r', lower1sigLimitOnCrossSectionWrtReference='%r', upper1sigLimitOnCrossSectionWrtReference='%r', lower2sigLimitOnCrossSectionWrtReference='%r', upper2sigLimitOnCrossSectionWrtReference='%r', logLikelihoodAtReference='%r')>" % \
 (self.lumi_weighted_efficiency, self.total_lumininosity, self.lower_1sig_Limit_on_cross_section_wrt_reference, self.upper_1sig_limit_on_cross_section_wrt_reference, self.lower_2sig_limit_on_cross_section_wrt_reference, self.upper_2sig_limit_on_cross_section_wrt_reference, self.log_likelihood_at_reference)
     
-class BasicResponse(db.Model):
+class BasicResponse(CommonColumns):
   __tablename__ = 'basic_responses'
   id = db.Column(db.Integer, primary_key=True)
   overall_efficiency = db.Column(db.Float)
@@ -365,7 +372,7 @@ class BasicResponse(db.Model):
 lower1sigLimitOnCrossSection='%r', upper1sigLimitOnCrossSection='%r', lower2sigLimitOnCrossSection='%r', upper2sigLimitOnCrossSection='%r', lower1sigLimitOnRate='%r', upper1sigLimitOnRate='%r', lower2sigLimitOnRate='%r', upper2sigLimitOnRate='%r', logLikelihoodAtReference='%r', referenceCrossSection='%r')>" % \
 (self.overall_efficiency, self.nominal_luminosity, self.lower_1sig_limit_on_cross_section, self.upper_1sig_limit_on_cross_section, self.lower_2sig_limit_on_cross_section, self.upper_2sig_limit_on_cross_section, self.lower_1sig_limit_on_rate, self.upper_1sig_limit_on_rate, self.lower_2sig_limit_on_rate, self.upper_2sig_limit_on_rate, self.log_likelihood_at_reference, self.reference_cross_section)
 
-class Histogram(db.Model):
+class Histogram(CommonColumns):
   __tablename__ = 'histograms'
   id = db.Column(db.Integer, primary_key=True)
   file_name = db.Column(db.String)
