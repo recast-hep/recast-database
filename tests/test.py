@@ -8,7 +8,6 @@ from recastdb.models import User, Analysis, ScanRequest, Parameters, BasicRespon
 class ModelTest(unittest.TestCase):
     def setUp(self):
         self.app = Flask(__name__)
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://nownhnjimayuwk:LVfBGoYAcG8UGc0KdtERuwGK8m@ec2-54-225-215-233.compute-1.amazonaws.com:5432/d3e5kjpch43v11'
         self.app.config['TESTING'] = True
         self.app.app_context().push()
         db.init_app(self.app)
