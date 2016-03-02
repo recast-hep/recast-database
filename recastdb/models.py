@@ -1,6 +1,5 @@
 from database import db
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import func
 # relations
 # Analysis <-> Run Condition: many-to-one
 #   * an analysis is always for a single run condition (yes? combined analyses? 7+8 TeV?)
@@ -29,14 +28,17 @@ from sqlalchemy import func
 
 class CommonColumns(db.Model):
   __abstract__ = True
-  _created = db.Column(db.DateTime, default=func.now())
-  _updated = db.Column(db.DateTime, default=func.now(), onupdate=func.now())
+  _created = db.Column(db.DateTime, default=db.func.now())
+  _updated = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
   _etag = db.Column(db.String(40))
 
-
+  @hybrid_property
+  def _id(self):
+    return self.id
+  
 class User(CommonColumns):
   __tablename__ = 'users'
-  id = db.Column(db.Integer, primary_key=True)
+  id = db.Column(db.Integer, primary_key=True, autoincrement=True)
   name = db.Column(db.String, nullable=False)
   email = db.Column(db.String, unique=False)
   orcid_id = db.Column(db.String, unique=True)
@@ -47,22 +49,14 @@ class User(CommonColumns):
   basic_requests = db.relationship('BasicRequest', backref='user', lazy='dynamic')
   subscriptions = db.relationship('Subscription', backref='subscriber', lazy='dynamic')
 
-  def __init__(self, name, email=None, token=None):
-    self.name = name
-    self.email = email
-    self.token = token
-
-  @hybrid_property
-  def _id(self):
-    return self.id
-
   def __repr__(self):
     return "<User(name='%s', email='%s', orcid_id='%s')>" % (self.name, self.email, self.orcid_id)
 
-class AccessToken(CommonColumns):
+class AccessToken(db.Model):
   __tablename__ = 'access_tokens'
   id = db.Column(db.Integer, primary_key=True)
   token = db.Column(db.String, unique=True)
+  token_name = db.Column(db.String, unique=True)
   user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
   
   def __repr__(self):
@@ -124,6 +118,7 @@ class RunCondition(CommonColumns):
 
 class Processing(CommonColumns):
   """ this is an actual request to process the recast request """
+  __tablename__ = 'processing'
   id            = db.Column(db.Integer, primary_key = True)
   jobguid       = db.Column(db.String(36), unique = True)
   celerytaskid  = db.Column(db.String(36), unique = True)
@@ -145,9 +140,6 @@ class Model(CommonColumns):
   scan_responses = db.relationship('ScanResponse', backref='model', lazy='dynamic')
   point_responses = db.relationship('PointResponse', backref='model', lazy='dynamic')
   basic_responses = db.relationship('BasicResponse', backref='model', lazy='dynamic')
-
-  def __init__(self, description):
-    self.description_of_model = description
     
   @hybrid_property
   def _id(self):
@@ -161,7 +153,7 @@ class Model(CommonColumns):
 #   * one scan request can have a single notification
 #   * a single notification corresponds to a single scan request
 
-class RequestNotification(db.Model):
+class RequestNotification(CommonColumns):
   __tablename__ ='request_notifications'
   id = db.Column(db.Integer, primary_key=True)
   description_of_original_analysis = db.Column(db.String)
