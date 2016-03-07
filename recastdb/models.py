@@ -286,6 +286,8 @@ class LHEFile(CommonColumns):
   file_name = db.Column(db.String)
   path = db.Column(db.String)
   doi = db.Column(db.String)    #Digital Object Identifier
+  zenodo_id = db.Column(db.String)
+  aws_s3_id = db.Column(db.String)
   basic_request_id = db.Column(db.Integer, db.ForeignKey('basic_requests.id'))
 
   @hybrid_property
