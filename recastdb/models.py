@@ -202,6 +202,8 @@ class ScanRequest(CommonColumns):
   additional_information = db.Column(db.Text)
   status = db.Column(db.Text, default="Incomplete")
   post_date = db.Column(db.Date)
+  zenodo_deposition_id = db.Column(db.String)
+  uuid = db.Column(db.String)
   analysis_id = db.Column(db.Integer, db.ForeignKey('analysis.id'))
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   scan_points = db.relationship('PointRequest', backref='scan_request', lazy='dynamic')
@@ -283,11 +285,11 @@ class Parameters(CommonColumns):
 class LHEFile(CommonColumns):
   __tablename__ = 'lhe_files'
   id = db.Column(db.Integer, primary_key=True)
-  file_name = db.Column(db.String)
+  file_name = db.Column(db.String) #uuid
   path = db.Column(db.String)
   doi = db.Column(db.String)    #Digital Object Identifier
-  zenodo_id = db.Column(db.String)
-  aws_s3_id = db.Column(db.String)
+  zenodo_file_id = db.Column(db.String)
+  original_file_name = db.Column(db.String) # original filename since file is renamed to uuid
   basic_request_id = db.Column(db.Integer, db.ForeignKey('basic_requests.id'))
 
   @hybrid_property
