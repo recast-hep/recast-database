@@ -180,9 +180,9 @@ class RequestNotification(CommonColumns):
 # PointRequest <-> BasicRequest one-to-many
 #   * to implement the list functionality
 
-# BasicRequest <-> LHEFile : one-to-many
-#   * one request might be associated with many LHE files
-#   * LHE file will be used for a single request
+# BasicRequest <-> ZipFile : one-to-many
+#   * one request might be associated with many Zip files
+#   * Zip file will be used for a single request
 
 # Request <-> Subscribers : many-to-many 
 
@@ -239,9 +239,7 @@ class PointRequest(CommonColumns):
 class BasicRequest(CommonColumns):
   __tablename__ = 'basic_requests'  
   id = db.Column(db.Integer, primary_key=True)
-  file_name = db.relationship('LHEFile', backref='basic_request', lazy='dynamic')
-  number_of_events = db.Column(db.Integer, nullable=False)
-  reference_cross_section = db.Column(db.Integer)
+  file_name = db.relationship('ZipFile', backref='basic_request', lazy='dynamic')
   conditions_description = db.Column(db.Integer)
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   basic_responses = db.relationship('BasicResponse', backref='basic_request', lazy='dynamic')
@@ -253,7 +251,7 @@ class BasicRequest(CommonColumns):
     return self.id
 
   def __repr__(self):
-    return "<BasicRequest(numberOfEvents='%s', referenceCrossSection='%s', conditions description='%s')>" % (self.number_of_events, self.reference_cross_section, self.conditions_description)
+    return "<BasicRequest(conditions description='%s')>" % (self.conditions_description)
 
 class ParameterPoint(CommonColumns):
   __tablename__ = 'parameter_points'
@@ -282,8 +280,8 @@ class Parameters(CommonColumns):
   def __repr__(self):
     return "<Parameters(parameter='%s')>" % (self.parameter)
 
-class LHEFile(CommonColumns):
-  __tablename__ = 'lhe_files'
+class ZipFile(CommonColumns):
+  __tablename__ = 'zip_files'
   id = db.Column(db.Integer, primary_key=True)
   file_name = db.Column(db.String) #uuid
   path = db.Column(db.String)
@@ -297,7 +295,7 @@ class LHEFile(CommonColumns):
     return self.id
 
   def __repr__(self):
-    return "<LHEFile(file name='%s', path='%s', doi='%s')>" % (self.file_name, self.path, self.doi)
+    return "<ZipFile(file name='%s', path='%s', doi='%s')>" % (self.file_name, self.path, self.doi)
 
 # Response related tables
 
