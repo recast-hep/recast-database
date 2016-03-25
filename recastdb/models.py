@@ -56,7 +56,7 @@ class AccessToken(db.Model):
   __tablename__ = 'access_tokens'
   id = db.Column(db.Integer, primary_key=True)
   token = db.Column(db.String, unique=True)
-  token_name = db.Column(db.String, unique=True)
+  token_name = db.Column(db.String)
   user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
   
   def __repr__(self):
@@ -180,19 +180,19 @@ class RequestNotification(CommonColumns):
 # PointRequest <-> BasicRequest one-to-many
 #   * to implement the list functionality
 
-# BasicRequest <-> ZipFile : one-to-many
-#   * one request might be associated with many Zip files
-#   * Zip file will be used for a single request
+# BasicRequest <-> RequestArchive : one-to-many
+#   * one request might be associated with many Archive files
+#   * Archive file will be used for a single request
 
 # Request <-> Subscribers : many-to-many 
 
 # ScanRequest <-> Parameters : one-to-many
 #   * to implement the list functionality
 
-# PointResponse <-> Histogram: one-to-many
-#   * a response can have many histograms
+# PointResponse <-> ResponseArchive: one-to-many
+#   * a response can have many ResponseArchive
 
-# BasicResponse <-> Histogram: one-to-many
+# BasicResponse <-> ResponseArchive: one-to-many
 
 class ScanRequest(CommonColumns):
   __tablename__ = 'scan_requests'    
@@ -239,7 +239,7 @@ class PointRequest(CommonColumns):
 class BasicRequest(CommonColumns):
   __tablename__ = 'basic_requests'  
   id = db.Column(db.Integer, primary_key=True)
-  file_name = db.relationship('ZipFile', backref='basic_request', lazy='dynamic')
+  file_name = db.relationship('RequestArchive', backref='basic_request', lazy='dynamic')
   conditions_description = db.Column(db.Integer)
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   basic_responses = db.relationship('BasicResponse', backref='basic_request', lazy='dynamic')
@@ -280,8 +280,8 @@ class Parameters(CommonColumns):
   def __repr__(self):
     return "<Parameters(parameter='%s')>" % (self.parameter)
 
-class ZipFile(CommonColumns):
-  __tablename__ = 'zip_files'
+class RequestArchive(CommonColumns):
+  __tablename__ = 'request_archives'
   id = db.Column(db.Integer, primary_key=True)
   file_name = db.Column(db.String) #uuid
   path = db.Column(db.String)
@@ -295,7 +295,7 @@ class ZipFile(CommonColumns):
     return self.id
 
   def __repr__(self):
-    return "<ZipFile(file name='%s', path='%s', doi='%s')>" % (self.file_name, self.path, self.doi)
+    return "<RequestArchive(file name='%s', path='%s', doi='%s')>" % (self.file_name, self.path, self.doi)
 
 # Response related tables
 
@@ -322,7 +322,7 @@ class PointResponse(CommonColumns):
   upper_1sig_limit_on_cross_section_wrt_reference = db.Column(db.Float)
   lower_2sig_limit_on_cross_section_wrt_reference = db.Column(db.Float)
   upper_2sig_limit_on_cross_section_wrt_reference = db.Column(db.Float)
-  merged_signal_template_wrt_reference = db.relationship('Histogram', backref='point_response', lazy='dynamic')
+  merged_signal_template_wrt_reference = db.relationship('ResponseArchive', backref='point_response', lazy='dynamic')
   log_likelihood_at_reference = db.Column(db.Float)
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   basic_answers = db.relationship('BasicResponse', backref='point_response', lazy='dynamic')
@@ -350,7 +350,7 @@ class BasicResponse(CommonColumns):
   upper_1sig_limit_on_rate = db.Column(db.Float)
   lower_2sig_limit_on_rate = db.Column(db.Float)
   upper_2sig_limit_on_rate = db.Column(db.Float)
-  signal_template = db.relationship('Histogram', backref='basic_response', lazy='dynamic')
+  signal_template = db.relationship('ResponseArchive', backref='basic_response', lazy='dynamic')
   log_likelihood_at_reference = db.Column(db.Float)
   reference_cross_section = db.Column(db.Float)
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
@@ -366,11 +366,13 @@ class BasicResponse(CommonColumns):
 lower1sigLimitOnCrossSection='%r', upper1sigLimitOnCrossSection='%r', lower2sigLimitOnCrossSection='%r', upper2sigLimitOnCrossSection='%r', lower1sigLimitOnRate='%r', upper1sigLimitOnRate='%r', lower2sigLimitOnRate='%r', upper2sigLimitOnRate='%r', logLikelihoodAtReference='%r', referenceCrossSection='%r')>" % \
 (self.overall_efficiency, self.nominal_luminosity, self.lower_1sig_limit_on_cross_section, self.upper_1sig_limit_on_cross_section, self.lower_2sig_limit_on_cross_section, self.upper_2sig_limit_on_cross_section, self.lower_1sig_limit_on_rate, self.upper_1sig_limit_on_rate, self.lower_2sig_limit_on_rate, self.upper_2sig_limit_on_rate, self.log_likelihood_at_reference, self.reference_cross_section)
 
-class Histogram(CommonColumns):
-  __tablename__ = 'histograms'
+class ResponseArchive(CommonColumns):
+  __tablename__ = 'response_archives'
   id = db.Column(db.Integer, primary_key=True)
   file_name = db.Column(db.String)
+  original_file_name = db.Column(db.String)
   file_path = db.Column(db.String)
+  doi = db.Column(db.String)
   histo_name = db.Column(db.String)
   histo_path = db.Column(db.String)
   point_response_id = db.Column(db.Integer, db.ForeignKey('point_responses.id'))
@@ -381,4 +383,4 @@ class Histogram(CommonColumns):
     return self.id
 
   def __repr__(self):
-    return "<Histogram(file_name='%s', file_path='%s', histo_name='%s', histo_path='%s')>" % (self.file_name, self.file_path, self.histo_name, self.histo_path)
+    return "<ResponseArchive(file_name='%s', file_path='%s', histo_name='%s', histo_path='%s')>" % (self.file_name, self.file_path, self.histo_name, self.histo_path)
