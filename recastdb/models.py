@@ -197,11 +197,12 @@ class RequestNotification(CommonColumns):
 class ScanRequest(CommonColumns):
   __tablename__ = 'scan_requests'    
   id = db.Column(db.Integer, primary_key=True)
+  title = db.Column(db.String)
   description_of_model = db.Column(db.String)
   reason_for_request = db.Column(db.Text)
   additional_information = db.Column(db.Text)
   status = db.Column(db.Text, default="Incomplete")
-  post_date = db.Column(db.Date)
+  post_date = db.Column(db.Date, default=db.func.current_date())
   zenodo_deposition_id = db.Column(db.String)
   uuid = db.Column(db.String)
   analysis_id = db.Column(db.Integer, db.ForeignKey('analysis.id'))
