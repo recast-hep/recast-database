@@ -224,7 +224,7 @@ class PointRequest(CommonColumns):
   __tablename__ = 'point_requests'    
   id = db.Column(db.Integer, primary_key=True)
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
-  parameter_points = db.relationship('ParameterPoint', backref='point_request', lazy='dynamic')
+  point_coordinates = db.relationship('PointCoordinate', backref='point_request', lazy='dynamic')
   requests = db.relationship('BasicRequest', backref='point_request', lazy='dynamic')
   point_responses = db.relationship('PointResponse', uselist=False, backref='point_request')
   scan_request_id = db.Column(db.Integer, db.ForeignKey('scan_requests.id'))
@@ -254,8 +254,8 @@ class BasicRequest(CommonColumns):
   def __repr__(self):
     return "<BasicRequest(conditions description='%s')>" % (self.conditions_description)
 
-class ParameterPoint(CommonColumns):
-  __tablename__ = 'parameter_points'
+class PointCoordinate(CommonColumns):
+  __tablename__ = 'point_coordinates'
   id = db.Column(db.Integer, primary_key=True)
   title = db.Column(db.String)
   value = db.Column(db.Float)
@@ -266,7 +266,7 @@ class ParameterPoint(CommonColumns):
     return self.id
 
   def __repr__(self):
-    return "<ParameterPoints(title='%s', value='%s')>" % (self.title, self.value)
+    return "<PointCoordinate(title='%s', value='%s')>" % (self.title, self.value)
 
 class Parameters(CommonColumns):
   __tablename__ = 'parameters'
