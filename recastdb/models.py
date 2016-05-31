@@ -1,5 +1,6 @@
 from database import db
 from sqlalchemy.ext.hybrid import hybrid_property
+import uuid
 # relations
 # Analysis <-> Run Condition: many-to-one
 #   * an analysis is always for a single run condition (yes? combined analyses? 7+8 TeV?)
@@ -72,6 +73,7 @@ class AccessToken(db.Model):
 class Analysis(CommonColumns):
   __tablename__ = 'analysis'
   id = db.Column(db.Integer, primary_key=True)
+  uuid = db.Column(db.String, default=str(uuid.uuid1()))
   title = db.Column(db.String, nullable=False)
   collaboration = db.Column(db.String)
   e_print = db.Column(db.String)
@@ -85,23 +87,25 @@ class Analysis(CommonColumns):
   subscriptions = db.relationship('Subscription', backref='analysis', lazy='dynamic')
 
   def __repr__(self):
-    return "<Analysis(title='%s',\
-	collaboration='%s',\
-	e_print='%s',\
-	journal='%s',\
-	doi='%s',\
-	inspire_URL='%s',\
-	description='%s',\
-	owner='%r')>" % (
-	  self.title,
-	  self.collaboration,
-	  self.e_print,
-	  self.journal,
-	  self.doi, 
-	  self.inspire_URL,
-	  self.description,
-	  self.owner_id
-	)
+    return "<Analysis(uuid='%s',\
+    title='%s',\
+    collaboration='%s',\
+    e_print='%s',\
+    journal='%s',\
+    doi='%s',\
+    inspire_URL='%s',\
+    description='%s',\
+    owner='%r')>" % (
+      self.uuid,
+      self.title,
+      self.collaboration,
+      self.e_print,
+      self.journal,
+      self.doi, 
+      self.inspire_URL,
+      self.description,
+      self.owner_id
+    )
 
 class Subscription(CommonColumns):
   __tablename__ = 'subscriptions'
@@ -116,16 +120,16 @@ class Subscription(CommonColumns):
 
   def __repr__(self):
     return "<Subscription(subscription_type='%s',\
-	description='%s',\
-	requirements='%s',\
-	notifications='%s',\
-	authoritative='%s')>" % (
-	  self.subscription_type, 
-	  self.description, 
-	  self.requirements, 
-	  self.notifications, 
-	  self.authoritative
-	)
+    description='%s',\
+    requirements='%s',\
+    notifications='%s',\
+    authoritative='%s')>" % (
+      self.subscription_type, 
+      self.description, 
+      self.requirements, 
+      self.notifications, 
+      self.authoritative
+    )
 
 class RunCondition(CommonColumns):
   __tablename__ = 'run_conditions'
@@ -136,10 +140,10 @@ class RunCondition(CommonColumns):
   
   def __repr__(self):
     return "<RunCondition(name='%s', description='%s')>" % (
-	  self.name, 
-	  self.description
-	)
-
+      self.name, 
+      self.description
+    )
+  
 class Processing(CommonColumns):
   """ this is an actual request to process the recast request """
   __tablename__ = 'processing'
@@ -149,9 +153,9 @@ class Processing(CommonColumns):
   
   def __repr__(self):
     return "<Processing(job uid='%r', celery task id='%r')>" % (
-	  self.jobuid, 
-	  self.celerytaskid
-	)
+      self.jobuid, 
+      self.celerytaskid
+    )
 
 class Model(CommonColumns):
   __tablename__ = 'models'
@@ -166,8 +170,8 @@ class Model(CommonColumns):
     
   def __repr__(self):
     return "<Model(description='%s')>" % (
-	  self.description_of_model
-	)
+      self.description_of_model
+    )
 
 # RequestNotification <-> ScanRequest: one-to-one
 #   ( Not sure about what notifications mean )
@@ -184,13 +188,13 @@ class RequestNotification(CommonColumns):
                                   
   def __repr__(self):
     return "RequestNotification(descriptionOfOriginalAnalysis='%s',\
-	descriptionOfModel='%s',\
-	descriptionOfRecastPotential='%s')>" % (
-	  self.description_of_original_analysis,
-	  self.description_of_model,
-	  self.description_of_recast_potential
-	)
-
+    descriptionOfModel='%s',\
+    descriptionOfRecastPotential='%s')>" % (
+      self.description_of_original_analysis,
+      self.description_of_model,
+      self.description_of_recast_potential
+    )
+  
 # Requests related tables
 
 # Request <-> Response(Result) one-to-one
@@ -220,6 +224,7 @@ class RequestNotification(CommonColumns):
 class ScanRequest(CommonColumns):
   __tablename__ = 'scan_requests'    
   id = db.Column(db.Integer, primary_key=True)
+  uuid = db.Column(db.String, default=str(uuid.uuid1()))
   title = db.Column(db.String)
   description_of_model = db.Column(db.String)
   reason_for_request = db.Column(db.Text)
@@ -227,7 +232,6 @@ class ScanRequest(CommonColumns):
   status = db.Column(db.Text, default="Incomplete")
   post_date = db.Column(db.Date, default=db.func.current_date())
   zenodo_deposition_id = db.Column(db.String)
-  uuid = db.Column(db.String)
   analysis_id = db.Column(db.Integer, db.ForeignKey('analysis.id'))
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   scan_points = db.relationship('PointRequest', backref='scan_request', lazy='dynamic')
@@ -237,29 +241,30 @@ class ScanRequest(CommonColumns):
   requester_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
   def __repr__(self):
-    return "<ScanRequest(tilte='%s',\
-	description of model='%s',\
-	reason_for_request='%s',\
-	additional_information='%s',\
-	status='%s',\
-	post_date='%r',\
-	zenodo_deposition_id='%r',\
-	uuid='%r',\
-	analysis_id='%r')>" % (
-	  self.title,
+    return "<ScanRequest(uuid='%s',\
+    tilte='%s',\
+    description of model='%s',\
+    reason_for_request='%s',\
+    additional_information='%s',\
+    status='%s',\
+    post_date='%r',\
+    zenodo_deposition_id='%r',\
+    analysis_id='%r')>" % (
+      self.uuid,
+      self.title,
       self.description_of_model,
-	  self.reason_for_request,
-	  self.additional_information,
-	  self.status,
-	  self.post_date,
-	  self.zenodo_deposition_id,
-	  self.uuid,
-	  self.analysis_id
+      self.reason_for_request,
+      self.additional_information,
+      self.status,
+      self.post_date,
+      self.zenodo_deposition_id,
+      self.analysis_id
     )
-
+  
 class PointRequest(CommonColumns):
   __tablename__ = 'point_requests'    
   id = db.Column(db.Integer, primary_key=True)
+  uuid = db.Column(db.String, default=str(uuid.uuid1()))
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   point_coordinates = db.relationship('PointCoordinate', backref='point_request', lazy='dynamic')
   requests = db.relationship('BasicRequest', backref='point_request', lazy='dynamic')
@@ -294,9 +299,9 @@ class PointCoordinate(CommonColumns):
 
   def __repr__(self):
     return "<PointCoordinate(title='%s', value='%s')>" % (
-        self.title, 
-        self.value
-      )
+      self.title, 
+      self.value
+    )
 
 class Parameters(CommonColumns):
   __tablename__ = 'parameters'
@@ -320,9 +325,13 @@ class RequestArchive(CommonColumns):
   basic_request_id = db.Column(db.Integer, db.ForeignKey('basic_requests.id'))
 
   def __repr__(self):
-    return "<RequestArchive(file name='%s', path='%s', doi='%s')>" % (
+    return "<RequestArchive(file name='%s',\
+    path='%s',\
+    original file name='%s',\
+    doi='%s')>" % (
       self.file_name,
       self.path,
+      self.original_file_name,
       self.doi
     )
 
@@ -331,6 +340,7 @@ class RequestArchive(CommonColumns):
 class ScanResponse(CommonColumns):
   __tablename__ = 'scan_responses'
   id = db.Column(db.Integer, primary_key=True)
+  uuid = db.Column(db.String, default=str(uuid.uuid1()))
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   scan_response = db.relationship('PointResponse', backref='scan_response', lazy='dynamic')
   scan_request_id = db.Column(db.Integer, db.ForeignKey('scan_requests.id'))
@@ -341,12 +351,14 @@ class ScanResponse(CommonColumns):
 class PointResponse(CommonColumns):
   __tablename__ = 'point_responses'
   id = db.Column(db.Integer, primary_key=True)
+  uuid = db.Column(db.String, default=str(uuid.uuid1()))
   lower_1sig_expected_CLs = db.Column(db.Float)
   lower_2sig_expected_CLs = db.Column(db.Float)
   expected_CLs = db.Column(db.Float)
   upper_1sig_expected_CLs = db.Column(db.Float)
   upper_2sig_expected_CLs = db.Column(db.Float)
   observed_CLs = db.Column(db.Float)
+  log_likelihood_at_reference = db.Column(db.Float)
   archives = db.relationship('ResponseArchive', backref='point_response', lazy='dynamic')
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   basic_answers = db.relationship('BasicResponse', backref='point_response', lazy='dynamic')
@@ -354,51 +366,51 @@ class PointResponse(CommonColumns):
   point_request_id = db.Column(db.Integer, db.ForeignKey('point_requests.id'))
                                
   def __repr__(self):
-	return "<PointResponse(lower_1sig_expected_CLs='%r',\
-	lower_2sig_expected_CLs='%r',\
-	expected_CLs='%r',\
-	upper_1sig_expected_CLs='%r',\
-	upper_2sig_expected_CLs='%r',\
-	observed_CLs='%r')>" % (
-	  self.lower_1sig_expected_CLs,
-	  self.lower_2sig_expected_CLs,
-	  self.expected_CLs,
-	  self.upper_1sig_expected_CLs,
-	  self.upper_2sig_expected_CLs,
-	  self.observed_CLs
-	)	  
-    
+    return "<PointResponse(lower_1sig_expected_CLs='%r',\
+    lower_2sig_expected_CLs='%r',\
+    expected_CLs='%r',\
+    upper_1sig_expected_CLs='%r',\
+    upper_2sig_expected_CLs='%r',\
+    observed_CLs='%r')>" % (
+      self.lower_1sig_expected_CLs,
+      self.lower_2sig_expected_CLs,
+      self.expected_CLs,
+      self.upper_1sig_expected_CLs,
+      self.upper_2sig_expected_CLs,
+      self.observed_CLs
+    )	  
+  
 class BasicResponse(CommonColumns):
   __tablename__ = 'basic_responses'
   id = db.Column(db.Integer, primary_key=True)
+  uuid = db.Column(db.String, default=str(uuid.uuid1()))
   lower_1sig_expected_CLs = db.Column(db.Float)
   lower_2sig_expected_CLs = db.Column(db.Float)
   expected_CLs = db.Column(db.Float)
   upper_1sig_expected_CLs = db.Column(db.Float)
   upper_2sig_expected_CLs = db.Column(db.Float)
   observed_CLs = db.Column(db.Float)
-  archives = db.relationship('ResponseArchive', backref='basic_response', lazy='dynamic')
   log_likelihood_at_reference = db.Column(db.Float)
-  reference_cross_section = db.Column(db.Float)
+  archives = db.relationship('ResponseArchive', backref='basic_response', lazy='dynamic')
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   point_response_id = db.Column(db.Integer, db.ForeignKey('point_responses.id'))
   basic_request_id = db.Column(db.Integer, db.ForeignKey('basic_requests.id'))
 
   def __repr__(self):
-	return "<BasicResponse(lower_1sig_expected_CLs='%r',\
-	lower_2sig_expected_CLs='%r',\
-	expected_CLs='%r',\
-	upper_1sig_expected_CLs='%r',\
-	upper_2sig_expected_CLs='%r',\
-	observed_CLs='%r')>" % (
-	  self.lower_1sig_expected_CLs,
-	  self.lower_2sig_expected_CLs,
-	  self.expected_CLs,
-	  self.upper_1sig_expected_CLs,
-	  self.upper_2sig_expected_CLs,
-	  self.observed_CLs
-	)
-	
+    return "<BasicResponse(lower_1sig_expected_CLs='%r',\
+    lower_2sig_expected_CLs='%r',\
+    expected_CLs='%r',\
+    upper_1sig_expected_CLs='%r',\
+    upper_2sig_expected_CLs='%r',\
+    observed_CLs='%r')>" % (
+      self.lower_1sig_expected_CLs,
+      self.lower_2sig_expected_CLs,
+      self.expected_CLs,
+      self.upper_1sig_expected_CLs,
+      self.upper_2sig_expected_CLs,
+      self.observed_CLs
+    )
+  
 class ResponseArchive(CommonColumns):
   __tablename__ = 'response_archives'
   id = db.Column(db.Integer, primary_key=True)
@@ -413,12 +425,20 @@ class ResponseArchive(CommonColumns):
 
   def __repr__(self):
     return "<ResponseArchive(file_name='%s',\
-	file_path='%s',\
-	histo_name='%s',\
-	histo_path='%s')>" % (
-	  self.file_name, 
-	  self.file_path, 
-	  self.histo_name, 
-	  self.histo_path
-	)
+    original_file_name='%s',\
+    doi='%s',\
+    point_response_id='%s',\
+    basic_response_id='%s',\
+    file_path='%s',\
+    histo_name='%s',\
+    histo_path='%s')>" % (
+      self.file_name,
+      self.original_file_name,
+      self.doi,
+      self.point_response_id,
+      self.basic_response_id,
+      self.file_path, 
+      self.histo_name, 
+      self.histo_path
+    )
 	
