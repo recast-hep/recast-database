@@ -278,7 +278,7 @@ class PointRequest(CommonColumns):
 class BasicRequest(CommonColumns):
   __tablename__ = 'basic_requests'  
   id = db.Column(db.Integer, primary_key=True)
-  file_name = db.relationship('RequestArchive', backref='basic_request', lazy='dynamic')
+  file_name = db.relationship('RequestArchive', backref='basic_request', uselist=False, lazy='dynamic')
   conditions_description = db.Column(db.Integer)
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   basic_responses = db.relationship('BasicResponse', backref='basic_request', lazy='dynamic')
@@ -359,7 +359,7 @@ class PointResponse(CommonColumns):
   upper_2sig_expected_CLs = db.Column(db.Float)
   observed_CLs = db.Column(db.Float)
   log_likelihood_at_reference = db.Column(db.Float)
-  archives = db.relationship('ResponseArchive', backref='point_response', lazy='dynamic')
+  archives = db.relationship('ResponseArchive', backref='point_response', uselist=False, lazy='dynamic')
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   basic_answers = db.relationship('BasicResponse', backref='point_response', lazy='dynamic')
   scan_response_id = db.Column(db.Integer, db.ForeignKey('scan_responses.id'))
@@ -391,7 +391,7 @@ class BasicResponse(CommonColumns):
   upper_2sig_expected_CLs = db.Column(db.Float)
   observed_CLs = db.Column(db.Float)
   log_likelihood_at_reference = db.Column(db.Float)
-  archives = db.relationship('ResponseArchive', backref='basic_response', lazy='dynamic')
+  archives = db.relationship('ResponseArchive', backref='basic_response', uselist=False, lazy='dynamic')
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   point_response_id = db.Column(db.Integer, db.ForeignKey('point_responses.id'))
   basic_request_id = db.Column(db.Integer, db.ForeignKey('basic_requests.id'))
