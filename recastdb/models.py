@@ -1,6 +1,5 @@
 from database import db
 from sqlalchemy.ext.hybrid import hybrid_property
-import uuid
 # relations
 # Analysis <-> Run Condition: many-to-one
 #   * an analysis is always for a single run condition (yes? combined analyses? 7+8 TeV?)
@@ -73,7 +72,6 @@ class AccessToken(db.Model):
 class Analysis(CommonColumns):
   __tablename__ = 'analysis'
   id = db.Column(db.Integer, primary_key=True)
-  uuid = db.Column(db.String, default=str(uuid.uuid1()))
   title = db.Column(db.String, nullable=False)
   collaboration = db.Column(db.String)
   e_print = db.Column(db.String)
@@ -87,8 +85,7 @@ class Analysis(CommonColumns):
   subscriptions = db.relationship('Subscription', backref='analysis', lazy='dynamic')
 
   def __repr__(self):
-    return "<Analysis(uuid='%s',\
-    title='%s',\
+    return "<Analysis(title='%s',\
     collaboration='%s',\
     e_print='%s',\
     journal='%s',\
@@ -96,7 +93,6 @@ class Analysis(CommonColumns):
     inspire_URL='%s',\
     description='%s',\
     owner='%r')>" % (
-      self.uuid,
       self.title,
       self.collaboration,
       self.e_print,
@@ -224,7 +220,6 @@ class RequestNotification(CommonColumns):
 class ScanRequest(CommonColumns):
   __tablename__ = 'scan_requests'    
   id = db.Column(db.Integer, primary_key=True)
-  uuid = db.Column(db.String, default=str(uuid.uuid1()))
   title = db.Column(db.String)
   description_of_model = db.Column(db.String)
   reason_for_request = db.Column(db.Text)
@@ -241,8 +236,7 @@ class ScanRequest(CommonColumns):
   requester_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
   def __repr__(self):
-    return "<ScanRequest(uuid='%s',\
-    tilte='%s',\
+    return "<ScanRequest(tilte='%s',\
     description of model='%s',\
     reason_for_request='%s',\
     additional_information='%s',\
@@ -250,7 +244,6 @@ class ScanRequest(CommonColumns):
     post_date='%r',\
     zenodo_deposition_id='%r',\
     analysis_id='%r')>" % (
-      self.uuid,
       self.title,
       self.description_of_model,
       self.reason_for_request,
@@ -264,7 +257,6 @@ class ScanRequest(CommonColumns):
 class PointRequest(CommonColumns):
   __tablename__ = 'point_requests'    
   id = db.Column(db.Integer, primary_key=True)
-  uuid = db.Column(db.String, default=str(uuid.uuid1()))
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   point_coordinates = db.relationship('PointCoordinate', backref='point_request', lazy='dynamic')
   requests = db.relationship('BasicRequest', backref='point_request', lazy='dynamic')
@@ -273,7 +265,7 @@ class PointRequest(CommonColumns):
   requester_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
   def __repr__(self):
-    return "PointRequest()>"
+    return "PointRequest(id='%s')>"% (self.id)
 
 class BasicRequest(CommonColumns):
   __tablename__ = 'basic_requests'  
@@ -340,7 +332,6 @@ class RequestArchive(CommonColumns):
 class ScanResponse(CommonColumns):
   __tablename__ = 'scan_responses'
   id = db.Column(db.Integer, primary_key=True)
-  uuid = db.Column(db.String, default=str(uuid.uuid1()))
   model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
   scan_response = db.relationship('PointResponse', backref='scan_response', lazy='dynamic')
   scan_request_id = db.Column(db.Integer, db.ForeignKey('scan_requests.id'))
@@ -351,7 +342,6 @@ class ScanResponse(CommonColumns):
 class PointResponse(CommonColumns):
   __tablename__ = 'point_responses'
   id = db.Column(db.Integer, primary_key=True)
-  uuid = db.Column(db.String, default=str(uuid.uuid1()))
   lower_1sig_expected_CLs = db.Column(db.Float)
   lower_2sig_expected_CLs = db.Column(db.Float)
   expected_CLs = db.Column(db.Float)
@@ -383,7 +373,6 @@ class PointResponse(CommonColumns):
 class BasicResponse(CommonColumns):
   __tablename__ = 'basic_responses'
   id = db.Column(db.Integer, primary_key=True)
-  uuid = db.Column(db.String, default=str(uuid.uuid1()))
   lower_1sig_expected_CLs = db.Column(db.Float)
   lower_2sig_expected_CLs = db.Column(db.Float)
   expected_CLs = db.Column(db.Float)
