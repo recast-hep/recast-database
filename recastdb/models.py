@@ -49,25 +49,12 @@ class User(CommonColumns):
     basic_requests = db.relationship('BasicRequest', backref='user', lazy='dynamic')
     subscriptions = db.relationship('Subscription', backref='subscriber', lazy='dynamic')
 
-    def __repr__(self):
-        return "<User(name='%s', email='%s', orcid_id='%s')>" % (
-    	  self.name,
-    	  self.email,
-    	  self.orcid_id
-    	)
-	
 class AccessToken(db.Model):
     __tablename__ = 'access_tokens'
     id = db.Column(db.Integer, primary_key=True)
     token = db.Column(db.String, unique=True)
     token_name = db.Column(db.String)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-
-    def __repr__(self):
-        return "<AccessToken(token='%s', user_id='%s')>" % (
-    	  self.token,
-    	  self.user_id
-    	)
 
 class Analysis(CommonColumns):
     __tablename__ = 'analysis'
@@ -84,25 +71,6 @@ class Analysis(CommonColumns):
     run_condition_id = db.Column(db.Integer, db.ForeignKey('run_conditions.id'))
     subscriptions = db.relationship('Subscription', backref='analysis', lazy='dynamic')
 
-    def __repr__(self):
-        return "<Analysis(title='%s',\
-        collaboration='%s',\
-        e_print='%s',\
-        journal='%s',\
-        doi='%s',\
-        inspire_URL='%s',\
-        description='%s',\
-        owner='%r')>" % (
-          self.title,
-          self.collaboration,
-          self.e_print,
-          self.journal,
-          self.doi, 
-          self.inspire_URL,
-          self.description,
-          self.owner_id
-        )
-
 class Subscription(CommonColumns):
     __tablename__ = 'subscriptions'
     id = db.Column(db.Integer, primary_key=True)
@@ -114,31 +82,12 @@ class Subscription(CommonColumns):
     subscriber_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     analysis_id = db.Column(db.Integer, db.ForeignKey('analysis.id'))
 
-    def __repr__(self):
-        return "<Subscription(subscription_type='%s',\
-        description='%s',\
-        requirements='%s',\
-        notifications='%s',\
-        authoritative='%s')>" % (
-          self.subscription_type, 
-          self.description, 
-          self.requirements, 
-          self.notifications, 
-          self.authoritative
-        )
-
 class RunCondition(CommonColumns):
     __tablename__ = 'run_conditions'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String)
     description = db.Column(db.String)
     analyses = db.relationship('Analysis',backref='run_condition',lazy='dynamic')
-
-    def __repr__(self):
-        return "<RunCondition(name='%s', description='%s')>" % (
-          self.name, 
-          self.description
-        )
   
 class Processing(CommonColumns):
     """ this is an actual request to process the recast request """
@@ -146,12 +95,6 @@ class Processing(CommonColumns):
     id            = db.Column(db.Integer, primary_key = True)
     jobguid       = db.Column(db.String(36), unique = True)
     celerytaskid  = db.Column(db.String(36), unique = True)
-
-    def __repr__(self):
-        return "<Processing(job uid='%r', celery task id='%r')>" % (
-          self.jobuid, 
-          self.celerytaskid
-        )
 
 class Model(CommonColumns):
     __tablename__ = 'models'
@@ -163,11 +106,6 @@ class Model(CommonColumns):
     scan_responses = db.relationship('ScanResponse', backref='model', lazy='dynamic')
     point_responses = db.relationship('PointResponse', backref='model', lazy='dynamic')
     basic_responses = db.relationship('BasicResponse', backref='model', lazy='dynamic')
-
-    def __repr__(self):
-        return "<Model(description='%s')>" % (
-          self.description_of_model
-        )
 
 # RequestNotification <-> ScanRequest: one-to-one
 #   ( Not sure about what notifications mean )
@@ -182,15 +120,6 @@ class RequestNotification(CommonColumns):
     description_of_recast_potential = db.Column(db.String)
     scan_request_id = db.Column(db.Integer, db.ForeignKey('scan_requests.id'))
                                   
-    def __repr__(self):
-        return "RequestNotification(descriptionOfOriginalAnalysis='%s',\
-        descriptionOfModel='%s',\
-        descriptionOfRecastPotential='%s')>" % (
-          self.description_of_original_analysis,
-          self.description_of_model,
-          self.description_of_recast_potential
-        )
-  
 # Requests related tables
 
 # Request <-> Response(Result) one-to-one
@@ -234,25 +163,6 @@ class ScanRequest(CommonColumns):
     scan_responses = db.relationship('ScanResponse', uselist=False, backref='scan_request')
     notifications = db.relationship('RequestNotification', uselist=False, backref='scan_request')
     requester_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-
-    def __repr__(self):
-        return "<ScanRequest(tilte='%s',\
-        description of model='%s',\
-        reason_for_request='%s',\
-        additional_information='%s',\
-        status='%s',\
-        post_date='%r',\
-        zenodo_deposition_id='%r',\
-        analysis_id='%r')>" % (
-          self.title,
-          self.description_of_model,
-          self.reason_for_request,
-          self.additional_information,
-          self.status,
-          self.post_date,
-          self.zenodo_deposition_id,
-          self.analysis_id
-        )
   
 class PointRequest(CommonColumns):
     __tablename__ = 'point_requests'    
@@ -263,9 +173,6 @@ class PointRequest(CommonColumns):
     point_responses = db.relationship('PointResponse', uselist=False, backref='point_request')
     scan_request_id = db.Column(db.Integer, db.ForeignKey('scan_requests.id'))
     requester_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-
-    def __repr__(self):
-        return "PointRequest(id='%s')>"% (self.id)
 
 class BasicRequest(CommonColumns):
     __tablename__ = 'basic_requests'  
@@ -279,11 +186,6 @@ class BasicRequest(CommonColumns):
     file_name = db.relationship('RequestArchive', backref='basic_request', uselist=False)
     basic_responses = db.relationship('BasicResponse', backref='basic_request', lazy='dynamic')
 
-    def __repr__(self):
-        return "<BasicRequest(conditions description='%s')>" % (
-          self.conditions_description
-        )
-
 class PointCoordinate(CommonColumns):
     __tablename__ = 'point_coordinates'
     id = db.Column(db.Integer, primary_key=True)
@@ -291,22 +193,11 @@ class PointCoordinate(CommonColumns):
     value = db.Column(db.Float)
     point_request_id = db.Column(db.Integer, db.ForeignKey('point_requests.id'))
 
-    def __repr__(self):
-        return "<PointCoordinate(title='%s', value='%s')>" % (
-          self.title, 
-          self.value
-        )
-
 class Parameters(CommonColumns):
     __tablename__ = 'parameters'
     id = db.Column(db.Integer, primary_key=True)
     parameter = db.Column(db.Integer)
     scan_request_id = db.Column(db.Integer, db.ForeignKey('scan_requests.id'))
-
-    def __repr__(self):
-        return "<Parameters(parameter='%s')>" % (
-          self.parameter
-        )
 
 class RequestArchive(CommonColumns):
     __tablename__ = 'request_archives'
@@ -318,17 +209,6 @@ class RequestArchive(CommonColumns):
     original_file_name = db.Column(db.String) # original filename since file is renamed to uuid
     basic_request_id = db.Column(db.Integer, db.ForeignKey('basic_requests.id'))
 
-    def __repr__(self):
-        return "<RequestArchive(file name='%s',\
-        path='%s',\
-        original file name='%s',\
-        doi='%s')>" % (
-          self.file_name,
-          self.path,
-          self.original_file_name,
-          self.doi
-        )
-
 # Response related tables
 
 class ScanResponse(CommonColumns):
@@ -337,9 +217,6 @@ class ScanResponse(CommonColumns):
     model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
     scan_response = db.relationship('PointResponse', backref='scan_response', lazy='dynamic')
     scan_request_id = db.Column(db.Integer, db.ForeignKey('scan_requests.id'))
-
-    def __repr__(self):
-        return "<ScanResponse()>"
     
 class PointResponse(CommonColumns):
     __tablename__ = 'point_responses'
@@ -356,21 +233,6 @@ class PointResponse(CommonColumns):
     basic_answers = db.relationship('BasicResponse', backref='point_response', lazy='dynamic')
     scan_response_id = db.Column(db.Integer, db.ForeignKey('scan_responses.id'))
     point_request_id = db.Column(db.Integer, db.ForeignKey('point_requests.id'))
-                               
-    def __repr__(self):
-        return "<PointResponse(lower_1sig_expected_CLs='%r',\
-        lower_2sig_expected_CLs='%r',\
-        expected_CLs='%r',\
-        upper_1sig_expected_CLs='%r',\
-        upper_2sig_expected_CLs='%r',\
-        observed_CLs='%r')>" % (
-          self.lower_1sig_expected_CLs,
-          self.lower_2sig_expected_CLs,
-          self.expected_CLs,
-          self.upper_1sig_expected_CLs,
-          self.upper_2sig_expected_CLs,
-          self.observed_CLs
-        )	  
   
 class BasicResponse(CommonColumns):
     __tablename__ = 'basic_responses'
@@ -387,21 +249,6 @@ class BasicResponse(CommonColumns):
     point_response_id = db.Column(db.Integer, db.ForeignKey('point_responses.id'))
     basic_request_id = db.Column(db.Integer, db.ForeignKey('basic_requests.id'))
 
-    def __repr__(self):
-        return "<BasicResponse(lower_1sig_expected_CLs='%r',\
-        lower_2sig_expected_CLs='%r',\
-        expected_CLs='%r',\
-        upper_1sig_expected_CLs='%r',\
-        upper_2sig_expected_CLs='%r',\
-        observed_CLs='%r')>" % (
-          self.lower_1sig_expected_CLs,
-          self.lower_2sig_expected_CLs,
-          self.expected_CLs,
-          self.upper_1sig_expected_CLs,
-          self.upper_2sig_expected_CLs,
-          self.observed_CLs
-        )
-  
 class ResponseArchive(CommonColumns):
     __tablename__ = 'response_archives'
     id = db.Column(db.Integer, primary_key=True)
@@ -413,23 +260,4 @@ class ResponseArchive(CommonColumns):
     histo_path = db.Column(db.String)
     point_response_id = db.Column(db.Integer, db.ForeignKey('point_responses.id'))
     basic_response_id = db.Column(db.Integer, db.ForeignKey('basic_responses.id'))
-
-    def __repr__(self):
-        return "<ResponseArchive(file_name='%s',\
-        original_file_name='%s',\
-        doi='%s',\
-        point_response_id='%s',\
-        basic_response_id='%s',\
-        file_path='%s',\
-        histo_name='%s',\
-        histo_path='%s')>" % (
-          self.file_name,
-          self.original_file_name,
-          self.doi,
-          self.point_response_id,
-          self.basic_response_id,
-          self.file_path, 
-          self.histo_name, 
-          self.histo_path
-        )
 
