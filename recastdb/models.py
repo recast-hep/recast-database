@@ -42,12 +42,12 @@ class User(CommonColumns):
     name = db.Column(db.String, nullable=False)
     email = db.Column(db.String, unique=False)
     orcid_id = db.Column(db.String, unique=True)
-    access_tokens = db.relationship('AccessToken', backref='user', lazy='dynamic')
-    analyses = db.relationship('Analysis', backref='user', lazy='dynamic')
-    requests = db.relationship('ScanRequest', backref='requester', lazy='dynamic')
-    point_requests = db.relationship('PointRequest', backref='user', lazy='dynamic')
-    basic_requests = db.relationship('BasicRequest', backref='user', lazy='dynamic')
-    subscriptions = db.relationship('Subscription', backref='subscriber', lazy='dynamic')
+    access_tokens = db.relationship('AccessToken', backref='user')
+    analyses = db.relationship('Analysis', backref='owner')
+    requests = db.relationship('ScanRequest', backref='requester')
+    point_requests = db.relationship('PointRequest', backref='requester')
+    basic_requests = db.relationship('BasicRequest', backref='requester')
+    subscriptions = db.relationship('Subscription', backref='subscriber')
 
 class AccessToken(db.Model):
     __tablename__ = 'access_tokens'
@@ -61,15 +61,17 @@ class Analysis(CommonColumns):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
     collaboration = db.Column(db.String)
-    e_print = db.Column(db.String)
-    journal = db.Column(db.String)
+    
     doi = db.Column(db.String)
-    inspire_URL = db.Column(db.String)
+    arxiv_id = db.Column(db.String)
+    inspire_id = db.Column(db.String)
+    cds_id = db.Column(db.String)
+
     description = db.Column(db.Text)
-    scan_requests = db.relationship('ScanRequest', backref='analysis', lazy='dynamic')
+    scan_requests = db.relationship('ScanRequest', backref='analysis')
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     run_condition_id = db.Column(db.Integer, db.ForeignKey('run_conditions.id'))
-    subscriptions = db.relationship('Subscription', backref='analysis', lazy='dynamic')
+    subscriptions = db.relationship('Subscription', backref='analysis')
 
 class Subscription(CommonColumns):
     __tablename__ = 'subscriptions'
@@ -87,7 +89,7 @@ class RunCondition(CommonColumns):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String)
     description = db.Column(db.String)
-    analyses = db.relationship('Analysis',backref='run_condition',lazy='dynamic')
+    analyses = db.relationship('Analysis',backref='run_condition')
   
 class Processing(CommonColumns):
     """ this is an actual request to process the recast request """
@@ -100,12 +102,12 @@ class Model(CommonColumns):
     __tablename__ = 'models'
     id = db.Column(db.Integer, primary_key=True)
     description_of_model = db.Column(db.String, nullable=True)
-    scan_requests = db.relationship('ScanRequest', backref='model', lazy='dynamic')
-    point_requests = db.relationship('PointRequest', backref='model', lazy='dynamic')
-    basic_requests = db.relationship('BasicRequest', backref='model', lazy='dynamic')
-    scan_responses = db.relationship('ScanResponse', backref='model', lazy='dynamic')
-    point_responses = db.relationship('PointResponse', backref='model', lazy='dynamic')
-    basic_responses = db.relationship('BasicResponse', backref='model', lazy='dynamic')
+    scan_requests = db.relationship('ScanRequest', backref='model')
+    point_requests = db.relationship('PointRequest', backref='model')
+    basic_requests = db.relationship('BasicRequest', backref='model')
+    scan_responses = db.relationship('ScanResponse', backref='model')
+    point_responses = db.relationship('PointResponse', backref='model')
+    basic_responses = db.relationship('BasicResponse', backref='model')
 
 # RequestNotification <-> ScanRequest: one-to-one
 #   ( Not sure about what notifications mean )
@@ -147,7 +149,7 @@ class RequestNotification(CommonColumns):
 # BasicResponse <-> ResponseArchive: one-to-many
 
 class ScanRequest(CommonColumns):
-    __tablename__ = 'scan_requests'    
+    __tablename__ = 'scan_requests'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String)
     description_of_model = db.Column(db.String)
@@ -156,47 +158,57 @@ class ScanRequest(CommonColumns):
     status = db.Column(db.Text, default="Incomplete")
     post_date = db.Column(db.Date, default=db.func.current_date())
     zenodo_deposition_id = db.Column(db.String)
+
     analysis_id = db.Column(db.Integer, db.ForeignKey('analysis.id'))
     model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
-    scan_points = db.relationship('PointRequest', backref='scan_request', lazy='dynamic')
-    parameters = db.relationship('Parameters', backref='scan_request', lazy='dynamic')
+    requester_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    scan_points = db.relationship('PointRequest', backref='scan_request')
+    parameters = db.relationship('Parameters', backref='scan_request')
     scan_responses = db.relationship('ScanResponse', uselist=False, backref='scan_request')
     notifications = db.relationship('RequestNotification', uselist=False, backref='scan_request')
-    requester_id = db.Column(db.Integer, db.ForeignKey('users.id'))
   
 class PointRequest(CommonColumns):
     __tablename__ = 'point_requests'    
     id = db.Column(db.Integer, primary_key=True)
+
     model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
-    point_coordinates = db.relationship('PointCoordinate', backref='point_request', lazy='dynamic')
-    requests = db.relationship('BasicRequest', backref='point_request', lazy='dynamic')
-    point_responses = db.relationship('PointResponse', uselist=False, backref='point_request')
     scan_request_id = db.Column(db.Integer, db.ForeignKey('scan_requests.id'))
     requester_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    point_coordinates = db.relationship('PointCoordinate', backref='point_request')
+    point_coordinates = db.relationship('PointCoordinate', backref='point_request')
+
+    requests = db.relationship('BasicRequest', backref='point_request')
+    point_responses = db.relationship('PointResponse', uselist=False, backref='point_request')
 
 class BasicRequest(CommonColumns):
     __tablename__ = 'basic_requests'  
     id = db.Column(db.Integer, primary_key=True)
     conditions_description = db.Column(db.Integer)
+    request_format = db.Column(db.String)
+
     model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
     point_request_id = db.Column(db.Integer, db.ForeignKey('point_requests.id'))
     requester_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    request_format = db.Column(db.String)
 
     file_name = db.relationship('RequestArchive', backref='basic_request', uselist=False)
-    basic_responses = db.relationship('BasicResponse', backref='basic_request', lazy='dynamic')
+    basic_responses = db.relationship('BasicResponse', backref='basic_request')
+
 
 class PointCoordinate(CommonColumns):
     __tablename__ = 'point_coordinates'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String)
     value = db.Column(db.Float)
+
     point_request_id = db.Column(db.Integer, db.ForeignKey('point_requests.id'))
 
 class Parameters(CommonColumns):
     __tablename__ = 'parameters'
     id = db.Column(db.Integer, primary_key=True)
     parameter = db.Column(db.Integer)
+
     scan_request_id = db.Column(db.Integer, db.ForeignKey('scan_requests.id'))
 
 class RequestArchive(CommonColumns):
@@ -207,6 +219,7 @@ class RequestArchive(CommonColumns):
     doi = db.Column(db.String)    #Digital Object Identifier
     zenodo_file_id = db.Column(db.String)
     original_file_name = db.Column(db.String) # original filename since file is renamed to uuid
+
     basic_request_id = db.Column(db.Integer, db.ForeignKey('basic_requests.id'))
 
 # Response related tables
@@ -215,7 +228,8 @@ class ScanResponse(CommonColumns):
     __tablename__ = 'scan_responses'
     id = db.Column(db.Integer, primary_key=True)
     model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
-    scan_response = db.relationship('PointResponse', backref='scan_response', lazy='dynamic')
+    scan_response = db.relationship('PointResponse', backref='scan_response')
+
     scan_request_id = db.Column(db.Integer, db.ForeignKey('scan_requests.id'))
     
 class PointResponse(CommonColumns):
@@ -228,12 +242,14 @@ class PointResponse(CommonColumns):
     upper_2sig_expected_CLs = db.Column(db.Float)
     observed_CLs = db.Column(db.Float)
     log_likelihood_at_reference = db.Column(db.Float)
-    archives = db.relationship('ResponseArchive', backref='point_response', uselist=False)
+
     model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
-    basic_answers = db.relationship('BasicResponse', backref='point_response', lazy='dynamic')
     scan_response_id = db.Column(db.Integer, db.ForeignKey('scan_responses.id'))
     point_request_id = db.Column(db.Integer, db.ForeignKey('point_requests.id'))
-  
+
+    archives = db.relationship('ResponseArchive', backref='point_response', uselist=False)
+    basic_answers = db.relationship('BasicResponse', backref='point_response')
+
 class BasicResponse(CommonColumns):
     __tablename__ = 'basic_responses'
     id = db.Column(db.Integer, primary_key=True)
@@ -244,10 +260,11 @@ class BasicResponse(CommonColumns):
     upper_2sig_expected_CLs = db.Column(db.Float)
     observed_CLs = db.Column(db.Float)
     log_likelihood_at_reference = db.Column(db.Float)
-    archives = db.relationship('ResponseArchive', backref='basic_response', uselist=False)
+    description = db.Column(db.String)
     model_id = db.Column(db.Integer, db.ForeignKey('models.id'))
     point_response_id = db.Column(db.Integer, db.ForeignKey('point_responses.id'))
     basic_request_id = db.Column(db.Integer, db.ForeignKey('basic_requests.id'))
+    archives = db.relationship('ResponseArchive', backref='basic_response', uselist=False)
 
 class ResponseArchive(CommonColumns):
     __tablename__ = 'response_archives'
